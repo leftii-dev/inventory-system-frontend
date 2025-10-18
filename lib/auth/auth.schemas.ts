@@ -11,3 +11,5 @@ export const RegisterUserSchema = z.object({
         .regex(/[0-9]/, {message: "Password must contain at least one number"})
         .regex(/[^a-zA-Z0-9]/, {message: "Password must contain at least one special character"})
 });
+
+export type RegisterUserSchemaType = z.infer<typeof RegisterUserSchema>;
