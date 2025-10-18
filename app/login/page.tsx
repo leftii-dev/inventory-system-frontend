@@ -3,6 +3,9 @@
 import { signIn } from 'next-auth/react';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import SubmitButton from "@/components/SubmitButton";
+import TextInput from "@/components/TextInput";
+import ImageButton from '@/components/ImageButton';
 
 export default function LoginPage() {
     const router = useRouter();
@@ -30,38 +33,55 @@ export default function LoginPage() {
     };
 
     return (
-        <div className={`max-h-2/3 mx-auto my-auto flex flex-col justify-center items-center p-6 border border-gray-300 rounded-lg shadow-lg`}>
-            <h2>Login</h2>
-            <form onSubmit={handleCredentialsLogin}>
+        <div className={`max-h-2/3 space-y-10 my-auto max-w-2xl mx-auto flex flex-col justify-center items-center p-10 border border-gray-300 rounded-lg shadow-lg`}>
+            <h2 className={`text-xl font-bold mb-2`}>Login</h2>
+            <form
+                onSubmit={handleCredentialsLogin}
+                className={`flex flex-col min-w-xl items-center gap-y-2.5`}
+            >
                 {error && <p className={`text-red-700`}>{error}</p> }
 
-                <input
-                    type='text'
+                <TextInput
+                    type={`text`}
                     value={identifier}
                     onChange={(e) => setIdentifier(e.target.value)}
-                    placeholder='Email or Employee ID'
-                    required
-                />
+                    placeholder={`Email or Employee ID`}
+                    required={true} />
 
-                <input
-                    type='password'
+                <TextInput
+                    type={`password`}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder='Password'
-                    required
-                />
-                <button type='submit' className='bg-green-900 text-white'>Login</button>
+                    placeholder={`Password`}
+                    required={true} />
+
+                <div className={`flex w-full justify-end`}>
+                    <SubmitButton text={`Login`} />
+                </div>
+                
             </form>
 
-            <div className={`text-center my-5`}>OR</div>
+            <div className={`text-center`}>OR</div>
 
-            <a href={`${backendUrl}/oauth2/authorization/google`}>
-                <button>Sign in with Google</button>
-            </a>
+            <div className={`flex flex-col max-w-48 items-center gap-y-2.5`}>
+                <a className={``}
+                   href={`${backendUrl}/oauth2/authorization/google`}>
+                    <ImageButton
+                        src={`/images/google_text.svg`}
+                        alt={`Google Logo - Sign in with Google`}
+                        width={420}
+                        height={60}/>
+                </a>
 
-            <a href={`${backendUrl}/oauth2/authorization/github`}>
-                <button>Sign in with GitHub</button>
-            </a>
+                <a className={``}
+                   href={`${backendUrl}/oauth2/authorization/github`}>
+                    <ImageButton
+                        src={`/images/github_text.svg`}
+                        alt={`GitHub Logo - Sign in with GitHub`}
+                        width={420}
+                        height={20}/>
+                </a>
+            </div>
         </div>
     )
 }
