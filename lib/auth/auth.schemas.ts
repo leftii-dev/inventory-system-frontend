@@ -1,7 +1,7 @@
 import {z} from 'zod';
 
 export const RegisterUserSchema = z.object({
-    email: z.email(),
+    email: z.email().toLowerCase(),
     name: z.string().min(2).max(50),
     password: z.string()
         .min(8, {error: "Password must be at least 8 characters long"})
@@ -11,5 +11,3 @@ export const RegisterUserSchema = z.object({
         .regex(/[0-9]/, {message: "Password must contain at least one number"})
         .regex(/[^a-zA-Z0-9]/, {message: "Password must contain at least one special character"})
 });
-
-export type RegisterUserSchemaType = z.infer<typeof RegisterUserSchema>;
