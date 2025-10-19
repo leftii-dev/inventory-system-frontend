@@ -18,7 +18,7 @@ export default function AuthButton() {
             console.error("Failed to sign out from backend:", error);
         }
 
-        await signOut({ callbackUrl: '/login' });
+        await signOut({ callbackUrl: '/auth/login' });
     };
 
     if(status === "loading") {
@@ -47,7 +47,7 @@ export default function AuthButton() {
 
     return (
         <div className={`flex flex-col w-full items-center gap-y-2 md:flex-row md:justify-end md:items-end md:gap-3 md:mb-4`}>
-            <Link href="/login" className={`w-full`}>
+            <Link href="/auth/login" className={`w-full`}>
                 <button
                     className={`font-inter px-2 py-2 w-full text-white bg-brand-primary rounded-md md:border-2 md:bg-white md:border-brand-primary md:rounded-xl md:py-1 
                                 md:text-black md:hover:border-white md:hover:text-white 
@@ -55,7 +55,7 @@ export default function AuthButton() {
                     Login
                 </button>
             </Link>
-            <Link href="/register" className={`w-full`}>
+            <Link href="/auth/register" className={`w-full`}>
                 <button
                     className={`font-inter w-full px-2 py-2 md:border-2 md:border-black md:bg-black md:text-white md:whitespace-nowrap md:rounded-xl md:py-1
                                  md:hover:opacity-75 md:hover:cursor-pointer`}
