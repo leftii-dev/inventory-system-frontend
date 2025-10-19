@@ -1,4 +1,4 @@
-export default function TextInput({type, value, onChange, placeholder, required}: {type: string, value: string, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void, placeholder: string, required?: boolean}) {
+export default function TextInput({type, name, value, onChange, placeholder, required}: {type: string, name?:string, value?: string, onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void, placeholder: string, required?: boolean}) {
     return (
         <input
             type={type}
@@ -7,6 +7,7 @@ export default function TextInput({type, value, onChange, placeholder, required}
                         focus:ring-2
                         focus:ring-brand-secondary
                         focus:outline-transparent`}
+            name={name}
             value={value}
             onChange={onChange}
             placeholder={placeholder}

@@ -9,5 +9,14 @@ export const RegisterUserSchema = z.object({
         .regex(/[a-z]/, {message: "Password must contain at least one lowercase letter"})
         .regex(/[A-Z]/, {message: "Password must contain at least one uppercase letter"})
         .regex(/[0-9]/, {message: "Password must contain at least one number"})
-        .regex(/[^a-zA-Z0-9]/, {message: "Password must contain at least one special character"})
-});
+        .regex(/[^a-zA-Z0-9]/, {message: "Password must contain at least one special character"}),
+    confirmPassword: z.string(), // Only for validation, will be stripped out later
+    roles: z.array(z.string()).optional(),
+})
+.refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+})
+    .transform(({confirmPassword , ...rest}) => rest);
+
+export type RegisterUserSchemaType = z.infer<typeof RegisterUserSchema>;
