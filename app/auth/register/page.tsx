@@ -33,7 +33,7 @@ export default function RegisterPage() {
     }
 
     return (
-        <div className={`rounded-lg shadow-md p-6 max-w-md mx-auto mt-10`}>
+        <div className={`border border-gray-300 rounded-lg shadow-lg p-6 max-w-md mx-auto mt-10`}>
             <h1 className={`font-inter text-2xl font-bold mb-4`}>New User</h1>
             {successMessage && (
                 <div className={`mb-4 p-2 bg-green-100 text-green-800 rounded`}>
