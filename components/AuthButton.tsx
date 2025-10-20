@@ -33,14 +33,12 @@ export default function AuthButton() {
     if (session) {
         return (
             <div className={`flex flex-col w-full md:flex-row md:justify-end md:items-end md:gap-3 md:whitespace-nowrap md:mb-4`}>
-                <span className={`hidden font-inter text-lg md:pt-2 md:block`}>Welcome, {session.user?.name?.split(' ')[0] || session.user?.email}!</span>
-                {/* The button now calls our custom handler */}
-                <button
-                    className={`font-inter px-2 py-2 bg-blue-400 rounded md:rounded-md md:py-1 text-white md:whitespace-nowrap md:hover:bg-blue-300 hover:cursor-pointer`}
-                    onClick={handleSignOut}
-                >
-                    Sign Out
-                </button>
+                    <button
+                        className={`font-inter px-2 py-2 bg-blue-400 rounded md:rounded-md md:py-1 text-white md:whitespace-nowrap md:hover:bg-blue-300 hover:cursor-pointer`}
+                        onClick={handleSignOut}
+                    >
+                        Sign Out
+                    </button>
             </div>
         );
     }

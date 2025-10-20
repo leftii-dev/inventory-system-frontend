@@ -2,13 +2,16 @@
 import Link from "next/link";
 import AuthButton from "@/components/AuthButton";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 export default function NavLinks() {
+    const { data: session } = useSession();
     const links = [
         { href: "/", label: "Home" },
         { href: "/dashboard", label: "Dashboard" },
         { href: "/about", label: "About" },
         { href: "/contact", label: "Contact" },
+        ...(session ? [{ href: "/profile", label: "My Profile" }] : []),
     ]
     const currentPath = usePathname();
 
@@ -18,7 +21,7 @@ export default function NavLinks() {
                 <ul className={`flex flex-col gap-y-1 mb-2 font-inter divide-y divide-brand-primary md:mb-0 md:divide-y-0 md:flex-row md:items-center md:gap-x-4 md:px-2`}>
                     {links.map((link) => (
                         <li key={link.href} className={`flex px-4 md:px-0`}>
-                            <Link href={link.href} className={`flex w-full h-12 justify-end items-center text-lg
+                            <Link href={link.href} className={`flex w-full h-12 justify-end items-center text-lg whitespace-nowrap
                             md:px-3 md:pt-2 md:items-start
                             ${currentPath === link.href ?
                                     `font-bold`

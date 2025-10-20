@@ -51,8 +51,8 @@ export default function Navbar() {
                 ref={menuRef}
                 className={`flex flex-col gap-y-4 md:flex-none`}>
 
-                <div className={`transition-[max-height] duration-400 shadow rounded-2xl ease-in-out overflow-hidden 
-                ${isOpen ? 'max-h-screen' : 'max-h-0'} md:shadow-none md:flex md:max-h-max`} id="navbarNav">
+                <div className={`transition-[max-height] duration-400 outline outline-gray-300 shadow rounded-2xl ease-in-out overflow-hidden 
+                ${isOpen ? 'max-h-screen' : 'max-h-0'} md:outline-none md:shadow-none md:flex md:max-h-max`} id="navbarNav">
                     <NavLinks />
                 </div>
             </div>
