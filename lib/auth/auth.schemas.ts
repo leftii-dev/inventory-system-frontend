@@ -12,10 +12,11 @@ export const RegisterUserSchema = z.object({
         .regex(/[0-9]/, {message: "Password must contain at least one number"})
         .regex(/[^a-zA-Z0-9]/, {message: "Password must contain at least one special character"}),
     confirmPassword: z.string(), // Only for validation, will be stripped out later
-    roles: z.array(z.string()).optional(),
+    roles: z.array(z.string()).nullable().optional(),
 })
 .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",
     path: ["confirmPassword"],
 })
     .transform(({confirmPassword , ...rest}) => rest);
+

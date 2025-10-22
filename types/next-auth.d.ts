@@ -9,7 +9,6 @@ interface IBackendUser {
     id: string;
     name?: string;
     email?: string;
-    // Note: The 'token' property is removed as it's not used in a stateful session flow.
 }
 
 declare module 'next-auth' {
@@ -17,17 +16,19 @@ declare module 'next-auth' {
      * The `user` object available on the client-side session.
      */
     interface Session {
+        backendCookie?: string;
         user: {
             id: string;
-            // Note: 'backendToken' is removed.
-        } & IBackendUser;
+        } & User;
     }
 
     /**
      * The `user` object passed from the `authorize` callback to the `jwt` callback.
      * It must match the shape of the user object from your backend.
      */
-    type User = IBackendUser;
+    type User = IBackendUser & {
+        backendCookie?: string;
+    };
 }
 
 declare module 'next-auth/jwt' {
@@ -36,6 +37,6 @@ declare module 'next-auth/jwt' {
      */
     interface JWT {
         id: string;
-        // Note: 'backendToken' is removed.
+        backendCookie?: string;
     }
 }

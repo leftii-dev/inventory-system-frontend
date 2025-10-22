@@ -8,17 +8,21 @@ export function formDataToTypedObject<T>(
 ): T {
     const obj: Record<string, unknown> = {};
 
-    for(const [key, value] of formData.entries()) {
-        if(numberFields.includes(key)) {
-            obj[key] = value !== null ? Number(value) : undefined;
+    for (const [key, value] of formData.entries()) {
+        const val = value instanceof File ? undefined : value;
+
+        if (numberFields.includes(key)) {
+            obj[key] = val !== "" ? Number(val) : undefined;
         } else if (booleanFields.includes(key)) {
-            obj[key] = value === 'true';
+            obj[key] = val === "true";
         } else {
-            obj[key] = value;
+            obj[key] = val; // string or undefined
         }
     }
+
     return obj as T;
 }
+
 
 export function validateSchema<T extends z.ZodTypeAny>(
     schema: T,

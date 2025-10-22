@@ -1,5 +1,4 @@
 'use server';
-
 import {RegisterUserSchema} from "@/lib/auth/auth.schemas";
 import {ActionResult, apiAction} from "@/lib/utils/api.actions";
 
@@ -22,3 +21,4 @@ export async function activateUserAction(token: string): Promise<ActionResult> {
         requireAuth: false, // Activation does not require prior authentication
     })
 }
+
