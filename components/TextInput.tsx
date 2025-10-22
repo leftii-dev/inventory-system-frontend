@@ -1,4 +1,14 @@
-export default function TextInput({type, name, value, onChange, placeholder, required}: {type: string, name?:string, value?: string, onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void, placeholder: string, required?: boolean}) {
+type TextInputProps = {
+    type: string;
+    name?: string;
+    defaultValue?: string;
+    value?: string;
+    onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    placeholder?: string;
+    required?: boolean;
+}
+
+export default function TextInput({type, name, defaultValue, value, onChange, placeholder, required} : TextInputProps) {
     return (
         <input
             type={type}
@@ -8,6 +18,7 @@ export default function TextInput({type, name, value, onChange, placeholder, req
                         focus:ring-brand-secondary
                         focus:outline-transparent`}
             name={name}
+            defaultValue={defaultValue}
             value={value}
             onChange={onChange}
             placeholder={placeholder}

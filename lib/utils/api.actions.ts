@@ -2,9 +2,9 @@
 
 import { z } from 'zod';
 import { formDataToTypedObject, validateSchema, extractErrors } from "@/lib/utils/validate";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { getServerSession } from "next-auth";
-import type { Dispatcher } from "undici-types";
+import { getSession } from "@/app/api/auth/[...nextauth]/route";
+import type {Dispatcher, RequestCredentials} from "undici-types";
+
 
 type HttpMethod = Dispatcher.HttpMethod;
 type SafeHttpMethod = HttpMethod | 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
@@ -65,10 +65,19 @@ export async function apiAction<T extends z.ZodTypeAny>(
         extraData = {},
     } = options;
 
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    let credentials: RequestCredentials | undefined = undefined;
+
     if (requireAuth) {
-        const session = await getServerSession(authOptions);
+        const session = await getSession();
         if (!session) {
             return { success: false, errors: { general: 'Unauthorized' } };
+        } else {
+            if(session.backendCookie) {
+                headers['Cookie'] = session.backendCookie;
+            } else {
+                credentials = 'include';
+            }
         }
     }
 
@@ -78,9 +87,11 @@ export async function apiAction<T extends z.ZodTypeAny>(
         const input = formDataToTypedObject(formData, numberFields, booleanFields);
         const validation = validateSchema(schema, input);
 
+
         if (!validation.success) {
             return { success: false, errors: extractErrors(validation.errors) };
         }
+        console.log(validation.data);
 
         bodyData = { ...(validation.data as Record<string, unknown>), ...extraData };
     } else {
@@ -90,17 +101,22 @@ export async function apiAction<T extends z.ZodTypeAny>(
     try {
         const response = await fetch(`${process.env.API_URL}${endpoint}`, {
             method,
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
+            headers,
+            credentials,
             body: ['GET', 'DELETE'].includes(method) ? undefined : JSON.stringify(bodyData),
         });
+        console.log('API Response:');
+        console.log(response);
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
+            console.log('API Error:');
+            console.log(response);
             return { success: false, errors: { general: errorData.message || 'Request failed' } };
         }
+        const json = await response.json();
 
-        return { success: true, data: bodyData };
+        return { success: true, ...json };
     } catch (err: unknown) {
         return { success: false, errors: { general: (err as Error).message || 'Network error' } };
     }

@@ -1,6 +1,5 @@
-import NextAuth from 'next-auth';
+import NextAuth, {AuthOptions, getServerSession, User} from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { AuthOptions } from 'next-auth';
 
 export const authOptions: AuthOptions = {
     providers: [
@@ -56,6 +55,7 @@ export const authOptions: AuthOptions = {
 
                         const apiResponse = await res.json();
                         const user = apiResponse.data;
+                        user.backendCookie = res.headers.get('set-cookie')?.split(';')[0];
 
                         if (user) {
                             return user;
@@ -79,6 +79,8 @@ export const authOptions: AuthOptions = {
     callbacks: {
         async jwt({ token, user }) {
             if (user) {
+                const backendUser = user as User;
+                token.backendCookie = backendUser.backendCookie;
                 token.id = user.id;
                 token.name = user.name;
                 token.email = user.email;
@@ -87,6 +89,7 @@ export const authOptions: AuthOptions = {
         },
         async session({ session, token }) {
             if (token && session.user) {
+                session.backendCookie = token.backendCookie;
                 session.user.id = token.id as string;
                 session.user.name = token.name as string;
                 session.user.email = token.email as string;
@@ -104,3 +107,6 @@ const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST };
 
+export async function getSession() {
+    return await getServerSession(authOptions);
+}

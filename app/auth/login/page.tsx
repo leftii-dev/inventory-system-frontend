@@ -2,18 +2,22 @@
 
 import { signIn } from 'next-auth/react';
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import SubmitButton from "@/components/SubmitButton";
 import TextInput from "@/components/TextInput";
 import ImageButton from '@/components/ImageButton';
+import { useSession} from "next-auth/react";
 
 export default function LoginPage() {
     const router = useRouter();
     const [identifier, setIdentifier] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState<string | null>(null);
+    const {data: session} = useSession();
 
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_API_URL;
+
+    const callbackUrl = useSearchParams().get('callbackUrl') || '/dashboard';
 
     const handleCredentialsLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -28,9 +32,17 @@ export default function LoginPage() {
         if (result?.error) {
             setError('Invalid credentials. Please try again.');
         } else {
-            router.push('/dashboard');
+            router.push(callbackUrl);
         }
     };
+
+    if (session) {
+        return(
+            <div>
+                <p className={`text-center mt-10`}>You are already logged in.</p>
+            </div>
+        )
+    }
 
     return (
         <div className={`max-h-2/3 space-y-10 my-auto max-w-2xl mx-auto flex flex-col justify-center items-center p-10 border border-gray-300 rounded-lg shadow-lg`}>
