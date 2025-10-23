@@ -1,13 +1,12 @@
-import ProfileForm from "@/app/profile/ProfileForm";
 import { getSession} from "@/app/api/auth/[...nextauth]/route";
-import { getCurrentUserAction } from "@/lib/users/users.actions";
+import {getCurrentUserAction} from "@/lib/users/users.actions";
 import { redirect } from 'next/navigation';
-import {UserResponseSchema} from "@/lib/users/users.schemas";
+import {SelfUpdateUserSchema, UserResponseSchema} from "@/lib/users/users.schemas";
 import {ApiResponseSchema} from "@/lib/utils/api.schema";
+import ProfileForm from "@/app/profile/ProfileForm";
 
 export default async function ProfilePage() {
     const session = await getSession();
-    // console.log(session);
     if(!session) {
         const callbackUrl = encodeURIComponent('/profile');
         redirect(`/auth/login?callbackUrl=${callbackUrl}`);
@@ -21,11 +20,18 @@ export default async function ProfilePage() {
         redirect(`/auth/login?callbackUrl=${callbackUrl}`);
     }
 
+    // Shape the data to be used in the form
     const result = ApiResponseSchema(UserResponseSchema).parse(response);
+    const initialData = SelfUpdateUserSchema.parse({
+        email: result.data.email,
+        name: result.data.name,
+        pictureUrl: result.data.pictureUrl,
+    })
+
 
     return (
         <div className={`flex flex-col items-center justify-center`}>
-            <ProfileForm user={result.data} />
+            <ProfileForm initialData={initialData}/>
         </div>
     )
 }

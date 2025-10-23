@@ -68,7 +68,9 @@ export default function LoginPage() {
                     required={true} />
 
                 <div className={`flex w-full justify-end`}>
-                    <SubmitButton text={`Login`} />
+                    <SubmitButton>
+                        Login
+                    </SubmitButton>
                 </div>
                 
             </form>

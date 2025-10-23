@@ -1,7 +1,7 @@
 import z from "zod";
 
-// Schema for User Request (update)
-export const UserRequestSchema = z.object({
+// Base object for update user schemas
+const BaseUpdateUserSchema = z.object({
     email: z.email().toLowerCase(),
     name: z.string()
         .min(2, {error: "Name must be at least 2 characters long"})
@@ -21,18 +21,26 @@ export const UserRequestSchema = z.object({
         (val) => val === '' ? undefined : val,
         z.string().optional()
     ),// Only for validation, will be stripped out later
-    pictureUrl: z.url().optional().or(z.literal('')),
+    pictureUrl: z.preprocess(
+        (val) => (val === null || val === undefined ? '' : val),
+        z.string()).optional(),
+    });
+
+export const SelfUpdateUserSchema = BaseUpdateUserSchema
+    .refine((data) => data.password === data.confirmPassword, {
+        message: "Passwords do not match",
+        path: ["confirmPassword"],
+    }).transform(({confirmPassword , ...rest}) => rest);
+
+// Schema for use with requests to update OTHER users
+export const AdminUpdateUserSchema = BaseUpdateUserSchema.extend({
+    id: z.uuid(),
     roles: z.array(z.string()).optional(),
     enabled: z.boolean().optional(),
     accountNonExpired: z.boolean().optional(),
     accountNonLocked: z.boolean().optional(),
     credentialsNonExpired: z.boolean().optional(),
 })
-    .refine((data) => data.password === data.confirmPassword, {
-        message: "Passwords do not match",
-        path: ["confirmPassword"],
-    }).transform(({confirmPassword , ...rest}) => rest);
-
 // Schema for User Response
 export const UserResponseSchema = z.object({
     id: z.uuid(),
