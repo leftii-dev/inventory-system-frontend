@@ -1,7 +1,7 @@
 'use server';
 
 import {ActionResult, apiAction} from "@/lib/utils/api.actions";
-import {UserRequestSchema} from "@/lib/users/users.schemas";
+import {SelfUpdateUserSchema} from "@/lib/users/users.schemas";
 import {getSession} from "@/app/api/auth/[...nextauth]/route";
 
 export async function getCurrentUserAction(): Promise<ActionResult> {
@@ -13,7 +13,7 @@ export async function getCurrentUserAction(): Promise<ActionResult> {
 }
 
 // Uses session to retrieve current logged-in user id
-export async function updateSelfAction(formData: FormData): Promise<ActionResult<typeof UserRequestSchema>> {
+export async function updateSelfAction(formData: FormData): Promise<ActionResult<typeof SelfUpdateUserSchema>> {
     const session = await getSession();
     if (!session?.user?.id) {
         throw new Error("Unauthorized");
@@ -21,7 +21,7 @@ export async function updateSelfAction(formData: FormData): Promise<ActionResult
 
 
     return apiAction({
-        schema: UserRequestSchema,
+        schema: SelfUpdateUserSchema,
         endpoint: `/users/${session.user.id}`,
         method: 'PUT',
         requireAuth: true,
