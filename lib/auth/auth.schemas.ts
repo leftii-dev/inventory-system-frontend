@@ -1,8 +1,9 @@
 import {z} from 'zod';
+import {error} from "next/dist/build/output/log";
 
 // Schema for user registration
 export const RegisterUserSchema = z.object({
-    email: z.email().toLowerCase(),
+    email: z.email({error: "Please provide a valid email"}).toLowerCase(),
     name: z.string().min(2).max(50),
     password: z.string()
         .min(8, {error: "Password must be at least 8 characters long"})
@@ -20,3 +21,11 @@ export const RegisterUserSchema = z.object({
 })
     .transform(({confirmPassword , ...rest}) => rest);
 
+export const LoginUserSchema = z.object({
+    email: z.preprocess(
+        (val) => (typeof val === "number" ? String(val) : typeof val === "string" ? val.trim() : val),
+        z.email({ error: "Invalid email or password" })
+            .or(z.string().regex(/^\d{6}$/, { error: "Invalid email or password" }))
+    ),
+    password: z.string({ error: "Invalid email or password" }),
+})
