@@ -2,7 +2,10 @@ import z from "zod";
 
 // Base object for update user schemas
 const BaseUpdateUserSchema = z.object({
-    email: z.email().toLowerCase(),
+    email: z.preprocess(
+        (val) => val === null || val === '' ? undefined : val,
+        z.email().toLowerCase().optional()
+    ),
     name: z.string()
         .min(2, {error: "Name must be at least 2 characters long"})
         .max(50, {error: "Name must be at most 50 characters long"}),
@@ -30,6 +33,7 @@ export const SelfUpdateUserSchema = BaseUpdateUserSchema
     .refine((data) => data.password === data.confirmPassword, {
         message: "Passwords do not match",
         path: ["confirmPassword"],
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
     }).transform(({confirmPassword , ...rest}) => rest);
 
 // Schema for use with requests to update OTHER users
@@ -45,7 +49,7 @@ export const AdminUpdateUserSchema = BaseUpdateUserSchema.extend({
 export const UserResponseSchema = z.object({
     id: z.uuid(),
     name: z.string(),
-    email: z.email(),
+    email: z.email().nullable().optional(),
     pictureUrl: z.url().nullable().optional(),
     roles: z.array(z.string()),
 }).catchall(z.unknown())

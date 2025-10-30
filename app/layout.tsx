@@ -19,7 +19,7 @@ const mono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Invetory Management System",
+  title: "Inventory Management System",
   description: "A comprehensive retail inventory management system for my dev portfolio.",
 };
 
@@ -28,16 +28,16 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return (
-    <html lang="en">
-      <body
-        className={`${inter.variable} ${mono.variable} antialiased`}
-      >
-      <AuthProvider>
-          <Navbar />
-          {children}
-      </AuthProvider>
-      </body>
-    </html>
-  );
+      return (
+        <html lang="en">
+          <body
+            className={`${inter.variable} ${mono.variable} antialiased`}
+          >
+          <AuthProvider>
+              <Navbar />
+              {children}
+          </AuthProvider>
+          </body>
+        </html>
+      );
 }

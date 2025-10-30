@@ -75,7 +75,7 @@ export default function RegisterPage() {
                     )}
                 </div>
                 <div>
-                    <SubmitButton text={`Register`} />
+                    <SubmitButton>Register</SubmitButton>
                 </div>
             </form>
 

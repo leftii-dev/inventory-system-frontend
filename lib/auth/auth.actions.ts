@@ -21,4 +21,3 @@ export async function activateUserAction(token: string): Promise<ActionResult> {
         requireAuth: false, // Activation does not require prior authentication
     })
 }
-

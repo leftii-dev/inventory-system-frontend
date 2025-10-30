@@ -5,18 +5,16 @@ import { formDataToTypedObject, validateSchema, extractErrors } from "@/lib/util
 import { getSession } from "@/app/api/auth/[...nextauth]/route";
 import type {Dispatcher, RequestCredentials} from "undici-types";
 
-
 type HttpMethod = Dispatcher.HttpMethod;
 type SafeHttpMethod = HttpMethod | 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
 
 type ActionResultWithSchema<T extends z.ZodTypeAny> =
-    | { success: true; data: z.infer<T> }
-    | { success: false; errors: Record<string, string> };
+    | { success: true; data: z.infer<T>, unauthorized?: false}
+    | { success: false; errors: Record<string, string>; unauthorized?: boolean };
 
 type ActionResultNoSchema =
-    | { success: true; data: Record<string, unknown> }
-    | { success: false; errors: Record<string, string> };
-
+    | { success: true; data: Record<string, unknown>, unauthorized?: false }
+    | { success: false; errors: Record<string, string>; unauthorized?: boolean };
 
 export type ActionResult<T extends z.ZodTypeAny | undefined = undefined> =
     T extends z.ZodTypeAny ? ActionResultWithSchema<T> : ActionResultNoSchema;
@@ -71,13 +69,17 @@ export async function apiAction<T extends z.ZodTypeAny>(
     if (requireAuth) {
         const session = await getSession();
         if (!session) {
-            return { success: false, errors: { general: 'Unauthorized' } };
-        } else {
-            if(session.backendCookie) {
-                headers['Cookie'] = session.backendCookie;
-            } else {
-                credentials = 'include';
+            return {
+                success: false,
+                errors: { general: 'Unauthorized' },
+                unauthorized: true,
             }
+        }
+
+        if (session.backendCookie) {
+            headers['Cookie'] = session.backendCookie;
+        } else {
+            credentials = 'include';
         }
     }
 
@@ -87,11 +89,9 @@ export async function apiAction<T extends z.ZodTypeAny>(
         const input = formDataToTypedObject(formData, numberFields, booleanFields);
         const validation = validateSchema(schema, input);
 
-
         if (!validation.success) {
             return { success: false, errors: extractErrors(validation.errors) };
         }
-        console.log(validation.data);
 
         bodyData = { ...(validation.data as Record<string, unknown>), ...extraData };
     } else {
@@ -105,19 +105,33 @@ export async function apiAction<T extends z.ZodTypeAny>(
             credentials,
             body: ['GET', 'DELETE'].includes(method) ? undefined : JSON.stringify(bodyData),
         });
-        console.log('API Response:');
-        console.log(response);
+
+        // Handle authentication/authorization failures
+        if (response.status === 401 || response.status === 403) {
+            return {
+                success: false,
+                errors: { general: 'Session expired'},
+                unauthorized: true,
+            }
+        }
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
-            console.log('API Error:');
-            console.log(response);
-            return { success: false, errors: { general: errorData.message || 'Request failed' } };
+            console.error('API Error:', response.status, errorData);
+            return {
+                success: false,
+                errors: { general: errorData.message || `Request failed with status ${response.status}` }
+            };
         }
-        const json = await response.json();
 
-        return { success: true, ...json };
+        const json = await response.json();
+        return { success: true, data: json.data || json };
+
     } catch (err: unknown) {
-        return { success: false, errors: { general: (err as Error).message || 'Network error' } };
+        console.error('Network error:', err);
+        return {
+            success: false,
+            errors: { general: (err as Error).message || 'Network error' }
+        };
     }
 }
