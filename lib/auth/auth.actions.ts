@@ -1,5 +1,5 @@
 'use server';
-import {RegisterUserSchema} from "@/lib/auth/auth.schemas";
+import {LoginUserSchema, RegisterUserSchema} from "@/lib/auth/auth.schemas";
 import {ActionResult, apiAction} from "@/lib/utils/api.actions";
 
 export async function registerUserAction(formData: FormData): Promise<ActionResult<typeof RegisterUserSchema>> {
@@ -19,5 +19,15 @@ export async function activateUserAction(token: string): Promise<ActionResult> {
         endpoint: '/auth/activate/' + encodeURIComponent(token),
         method: 'POST',
         requireAuth: false, // Activation does not require prior authentication
+    })
+}
+
+export async function loginAction(formData: FormData): Promise<ActionResult<typeof LoginUserSchema>> {
+    const emailOrCode = formData.get('email') as string;
+    return apiAction({
+        schema: LoginUserSchema,
+        endpoint: /^\d{6}$/.test(emailOrCode) ? '/auth/employee' : '/auth/user',
+        method: 'POST',
+        requireAuth: false,
     })
 }
