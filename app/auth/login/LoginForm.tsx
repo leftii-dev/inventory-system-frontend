@@ -8,12 +8,19 @@ import {z} from "zod";
 import {loginAction} from "@/lib/auth/auth.actions";
 import SubmitButton from "@/components/SubmitButton";
 import FormInput from "@/components/form/FormInput";
+import {useRouter} from "next/navigation";
+import {signIn, useSession} from "next-auth/react";
+import {useEffect, useRef} from "react";
 
 export default function LoginForm({
-    initialData
+    initialData,
+    callbackUrl
 }:{
-    initialData: z.infer<typeof LoginUserSchema>
+    initialData: z.infer<typeof LoginUserSchema>,
+    callbackUrl: string
 }) {
+    const router = useRouter();
+    const hasRedirected = useRef(false);
 
     return (
         <FormCard<ActionResult<typeof LoginUserSchema>>
@@ -27,8 +34,33 @@ export default function LoginForm({
                 if(!state.success) {
                     state.errors = {...state.errors, general: 'Invalid email or password'}
                 }
+
+                const ClientEffects = () => {
+                    const router = useRouter();
+                    const { data: session, status } = useSession();
+
+                    useEffect(() => {
+                        if (
+                            state.success &&
+                            'data' in state &&
+                            !hasRedirected.current &&
+                            state.data?.email
+                        ) {
+                            signIn("credentials", { redirect: false, identifier: state.data.email })
+                                .then((res) => {
+                                    if(res?.ok) {
+                                        router.push(callbackUrl);
+                                    }
+                                });
+                        }
+                    }, [state.success, router, callbackUrl]);
+
+                    return null; // no UI
+                };
+
                     return(
                         <div>
+                            <ClientEffects />
                             <FormInput
                                 key={`email-${state.success}`}
                                 label={'Email:'}

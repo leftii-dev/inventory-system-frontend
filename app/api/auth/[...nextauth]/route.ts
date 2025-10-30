@@ -15,11 +15,10 @@ export const authOptions: AuthOptions = {
             name: 'Credentials',
             credentials: {
                 identifier: { label: 'Email or Employee ID', type: 'text' },
-                password: { label: 'Password', type: 'password' },
                 isOAuthCallback: { type: 'hidden' },
                 userJSON: { type: 'hidden' },
             },
-            async authorize(credentials) {
+            async authorize(credentials, req) {
                 // Handle OAuth callback - user data already fetched server-side
                 if (credentials?.isOAuthCallback === 'true' && credentials?.userJSON) {
                     try {
@@ -36,28 +35,22 @@ export const authOptions: AuthOptions = {
                 }
 
                 // Handle traditional credentials login
-                if (credentials?.identifier && credentials?.password) {
-                    const { identifier, password } = credentials;
-
-                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                    const isEmail = emailRegex.test(identifier);
-
-                    const loginUrl = isEmail
-                        ? `${process.env.API_URL}/auth/user`
-                        : `${process.env.API_URL}/auth/employee`;
+                if (credentials?.identifier) {
+                    const meUrl = `${process.env.API_URL}/users/me`
 
                     try {
-                        const res = await fetch(loginUrl, {
+                        const res = await fetch(meUrl, {
                             method: 'POST',
-                            body: JSON.stringify(
-                                isEmail
-                                    ? { email: identifier, password }
-                                    : { employeeCode: identifier, password }
-                            ),
-                            headers: { 'Content-Type': 'application/json' },
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Cookie': req.headers?.cookie || ''
+                            },
+                            credentials: "include"
+
                         });
 
                         if (!res.ok) {
+                            console.log("Backend /auth/me failed:", res.status, await res.text());
                             return null;
                         }
 

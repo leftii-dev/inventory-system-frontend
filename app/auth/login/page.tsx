@@ -8,6 +8,7 @@ import SubmitButton from "@/components/SubmitButton";
 import TextInput from "@/components/TextInput";
 import ImageButton from '@/components/ImageButton';
 import { useSession } from "next-auth/react";
+import LoginForm from "@/app/auth/login/LoginForm";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -20,7 +21,7 @@ export default function LoginPage() {
     const { status } = useSession();
 
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
-    const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
+    const callbackUrl = searchParams.get('callbackUrl') || '/';
     const reason = searchParams.get('reason');
 
     useEffect(() => {
@@ -92,31 +93,10 @@ export default function LoginPage() {
                 </div>
             )}
 
-            <form onSubmit={handleCredentialsLogin} className="flex flex-col min-w-xl items-center gap-y-2.5 w-full">
-                {error && <p className="text-red-700">{error}</p>}
-
-                <TextInput
-                    type="text"
-                    value={identifier}
-                    onChange={(e) => setIdentifier(e.target.value)}
-                    placeholder="Email or Employee ID"
-                    required
-                />
-
-                <TextInput
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Password"
-                    required
-                />
-
-                <div className="flex w-full justify-end">
-                    <SubmitButton>
-                        Login
-                    </SubmitButton>
-                </div>
-            </form>
+            <LoginForm
+                initialData={{email: '', password: ''}}
+                callbackUrl={callbackUrl}
+            />
 
             <div className="text-center">OR</div>
 

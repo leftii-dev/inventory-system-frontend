@@ -7,11 +7,11 @@ import ProfileForm from "@/app/profile/ProfileForm";
 import {handleUnauthorized} from "@/lib/utils/handleUnauthorized";
 
 export default async function ProfilePage() {
-    const session = await getSession();
-    if(!session) {
-        const callbackUrl = encodeURIComponent('/profile');
-        redirect(`/auth/login?callbackUrl=${callbackUrl}&reason=no-session`);
-    }
+    // const session = await getSession();
+    // if(!session) {
+    //     const callbackUrl = encodeURIComponent('/profile');
+    //     redirect(`/auth/login?callbackUrl=${callbackUrl}&reason=no-session`);
+    // }
 
     const response = await getCurrentUserAction();
 

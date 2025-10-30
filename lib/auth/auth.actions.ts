@@ -1,6 +1,7 @@
 'use server';
 import {LoginUserSchema, RegisterUserSchema} from "@/lib/auth/auth.schemas";
 import {ActionResult, apiAction} from "@/lib/utils/api.actions";
+import {signIn} from "next-auth/react";
 
 export async function registerUserAction(formData: FormData): Promise<ActionResult<typeof RegisterUserSchema>> {
     return apiAction({
@@ -24,7 +25,7 @@ export async function activateUserAction(token: string): Promise<ActionResult> {
 
 export async function loginAction(
     prevState: ActionResult<typeof LoginUserSchema>,
-    formData: FormData
+    formData: FormData,
 ): Promise<ActionResult<typeof LoginUserSchema>> {
     const emailOrCode = formData.get('email') as string;
     return apiAction({
