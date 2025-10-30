@@ -62,7 +62,7 @@ export default function FormCard<S extends { success?: boolean; errors?: Record<
                     }`}
                 >
                     {state.success
-                        ? 'Saved successfully!'
+                        ? 'Success!'
                         : state.errors?.general ?? 'Something went wrong.'}
                 </div>
             )}
