@@ -1,3 +1,4 @@
+// /app/auth/login/page.tsx
 'use client';
 
 import { signIn, signOut } from 'next-auth/react';

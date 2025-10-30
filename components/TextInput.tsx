@@ -1,3 +1,4 @@
+// /components/TextInput.tsx
 type TextInputProps = {
     type: string;
     name?: string;
