@@ -1,5 +1,13 @@
 import NextAuth, {AuthOptions, getServerSession, User} from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
+import {parseSetCookieExpiry} from "@/lib/auth/cookie";
+import {JWT} from "next-auth/jwt";
+
+interface MyToken extends JWT {
+    backendCookie?: string;
+    sessionExpiresAt?: string;
+    invalidated?: boolean;
+}
 
 export const authOptions: AuthOptions = {
     providers: [
@@ -12,10 +20,12 @@ export const authOptions: AuthOptions = {
                 userJSON: { type: 'hidden' },
             },
             async authorize(credentials) {
-                if (credentials?.isOAuthCallback && credentials?.userJSON) {
+                // Handle OAuth callback - user data already fetched server-side
+                if (credentials?.isOAuthCallback === 'true' && credentials?.userJSON) {
                     try {
                         const user = JSON.parse(credentials.userJSON);
                         if (user && user.id) {
+                            // User object already has backendCookie and sessionExpiresAt
                             return user;
                         }
                     } catch (error) {
@@ -25,26 +35,24 @@ export const authOptions: AuthOptions = {
                     return null;
                 }
 
+                // Handle traditional credentials login
                 if (credentials?.identifier && credentials?.password) {
                     const { identifier, password } = credentials;
 
                     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                    let loginUrl = '';
                     const isEmail = emailRegex.test(identifier);
 
-                    if (isEmail) {
-                        loginUrl = `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/v1/auth/user`;
-                    } else {
-                        loginUrl = `${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/v1/auth/employee`;
-                    }
+                    const loginUrl = isEmail
+                        ? `${process.env.API_URL}/auth/user`
+                        : `${process.env.API_URL}/auth/employee`;
 
                     try {
                         const res = await fetch(loginUrl, {
                             method: 'POST',
                             body: JSON.stringify(
                                 isEmail
-                                    ? { email: identifier, password: password }
-                                    : { employeeCode: identifier, password: password }
+                                    ? { email: identifier, password }
+                                    : { employeeCode: identifier, password }
                             ),
                             headers: { 'Content-Type': 'application/json' },
                         });
@@ -55,9 +63,13 @@ export const authOptions: AuthOptions = {
 
                         const apiResponse = await res.json();
                         const user = apiResponse.data;
-                        user.backendCookie = res.headers.get('set-cookie')?.split(';')[0];
+
+                        const setCookie = res.headers.get('set-cookie') ?? res.headers.get('Set-Cookie');
+                        const sessionExpiresAt = parseSetCookieExpiry(setCookie ?? undefined);
 
                         if (user) {
+                            user.backendCookie = setCookie?.split(';')[0];
+                            user.sessionExpiresAt = sessionExpiresAt?.toISOString();
                             return user;
                         }
 
@@ -77,29 +89,62 @@ export const authOptions: AuthOptions = {
     },
 
     callbacks: {
-        async jwt({ token, user }) {
+        async jwt({ token, user }): Promise<MyToken> {
+            const t = token as MyToken;
+
             if (user) {
-                const backendUser = user as User;
+                const backendUser = user as User & {
+                    backendCookie?: string;
+                    sessionExpiresAt?: string;
+                };
                 token.backendCookie = backendUser.backendCookie;
+                token.sessionExpiresAt = backendUser.sessionExpiresAt;
                 token.id = user.id;
                 token.name = user.name;
                 token.email = user.email;
             }
+
+            // Check if backend session has expired
+            if (token.sessionExpiresAt && new Date(token.sessionExpiresAt) < new Date()) {
+                console.log('Backend session expired - invalidating token');
+                return {
+                    ...t,
+                    id: '',
+                    name: '',
+                    email: '',
+                    backendCookie: undefined,
+                    sessionExpiresAt: undefined,
+                    invalidated: true,
+                };
+            }
+
             return token;
         },
+
         async session({ session, token }) {
+            const t = token as MyToken;
+
+            if (!t || t.invalidated) {
+                session.user = { id: '', name: '', email: '' };
+                session.backendCookie = undefined;
+                session.sessionExpiresAt = undefined;
+                return session;
+            }
+
             if (token && session.user) {
                 session.backendCookie = token.backendCookie;
                 session.user.id = token.id as string;
                 session.user.name = token.name as string;
                 session.user.email = token.email as string;
+                session.sessionExpiresAt = token.sessionExpiresAt;
             }
+
             return session;
         },
     },
 
     pages: {
-        signIn: '/login',
+        signIn: '/auth/login',
     },
 };
 

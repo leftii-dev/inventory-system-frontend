@@ -11,8 +11,8 @@ export const ApiResponseSchema = <T extends z.ZodTypeAny>(dataSchema: T) =>
         z.object({
             field: z.string(),
             message: z.string()
-    }).nullable().optional()
-    ),
+    })
+    ).optional(),
 });
 
 export type ApiResponse<T extends z.ZodTypeAny> = z.infer<

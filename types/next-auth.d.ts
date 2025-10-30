@@ -17,6 +17,7 @@ declare module 'next-auth' {
      */
     interface Session {
         backendCookie?: string;
+        sessionExpiresAt?: string
         user: {
             id: string;
         } & User;
@@ -28,6 +29,7 @@ declare module 'next-auth' {
      */
     type User = IBackendUser & {
         backendCookie?: string;
+        sessionExpiresAt?: string;
     };
 }
 
@@ -38,5 +40,6 @@ declare module 'next-auth/jwt' {
     interface JWT {
         id: string;
         backendCookie?: string;
+        sessionExpiresAt?: string
     }
 }

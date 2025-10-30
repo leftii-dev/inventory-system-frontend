@@ -13,7 +13,10 @@ export async function getCurrentUserAction(): Promise<ActionResult> {
 }
 
 // Uses session to retrieve current logged-in user id
-export async function updateSelfAction(formData: FormData): Promise<ActionResult<typeof SelfUpdateUserSchema>> {
+export async function updateSelfAction(
+    prevState: ActionResult<typeof SelfUpdateUserSchema>,
+    formData: FormData
+): Promise<ActionResult<typeof SelfUpdateUserSchema>> {
     const session = await getSession();
     if (!session?.user?.id) {
         throw new Error("Unauthorized");

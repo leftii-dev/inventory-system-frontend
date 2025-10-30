@@ -10,7 +10,7 @@ export default function AuthButton() {
 
     const handleSignOut = async () => {
         try {
-            await fetch(`${process.env.NEXT_PUBLIC_BACKEND_API_URL}/api/v1/auth/logout`, {
+            await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/auth/logout`, {
                 method: 'POST',
                 credentials: 'include',
             });

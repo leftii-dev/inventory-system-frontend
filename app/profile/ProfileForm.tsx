@@ -7,6 +7,7 @@ import SubmitButton from "@/components/SubmitButton";
 import {ActionResult} from "@/lib/utils/api.actions";
 import FormInput from "@/components/form/FormInput";
 import FormCard from "@/components/form/FormCard";
+import Image from "next/image";
 
 export default function ProfileForm({
     initialData
@@ -23,38 +24,53 @@ export default function ProfileForm({
             }}
             confirmMessage={'Are you sure you want to update your profile?'}
         >
-            {(state, isPending) => (
+            {(state) => (
                 <>
+                    {state.success && (
+                        <div className={`mx-auto relative w-24 h-24 rounded-full overflow-hidden`}>
+                            <Image
+                                className={`object-cover`}
+                                src={state.data.pictureUrl || initialData.pictureUrl || '/images/default_user.svg'}
+                                alt={'User Picture'}
+                                fill
+                            />
+                        </div>
+                    )
+                    }
                     <FormInput
+                        key={`email-${state.success}`}
                         name={'email'}
                         label={'Email'}
                         type={'email'}
-                        defaultValue={state.success ? state.data?.email : ''}
+                        defaultValue={state.success ? state.data?.email : initialData.email}
                         error={state.success ? undefined : state.errors?.email}
                     />
                     <FormInput
+                        key={`name-${state.success}`}
                         name={'name'}
                         label={'Name'}
                         type={'text'}
-                        defaultValue={state.success ? state.data?.name : ''}
+                        defaultValue={state.success ? state.data?.name : initialData.name}
                         error={state.success ? undefined : state.errors?.name}
                     />
                     <FormInput
+                        key={`password-${state.success}`}
                         name={'password'}
-                        label={'Change Password'}
+                        label={'Change Password (For Email/Password Login)'}
                         type={'password'}
                         defaultValue={''}
                         error={state.success ? undefined : state.errors?.password}
                     />
                     <FormInput
+                        key={`confirmPassword-${state.success}`}
                         name={'confirmPassword'}
                         label={'Confirm Password Change'}
-                        type={'confirmPassword'}
+                        type={'password'}
                         defaultValue={''}
                         error={state.success ? undefined : state.errors?.confirmPassword}
                     />
-                    <SubmitButton disabled={isPending}>
-                        {isPending ? 'Updating...' : 'Update'}
+                    <SubmitButton>
+                        Update
                     </SubmitButton>
                 </>
             )}
