@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import {clearTimeout} from "node:timers";
 
-export function useAutoRfreshSession() {
+export function useAutoRefreshSession() {
     const { data: session, update } = useSession();
 
     useEffect(() => {
