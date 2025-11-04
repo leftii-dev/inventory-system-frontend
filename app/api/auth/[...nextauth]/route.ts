@@ -1,12 +1,10 @@
-import NextAuth, {AuthOptions, getServerSession, User} from 'next-auth';
+import NextAuth, { AuthOptions, getServerSession, User } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import {parseSetCookieExpiry} from "@/lib/auth/cookie";
-import {JWT} from "next-auth/jwt";
+import { parseSetCookieExpiry } from "@/lib/auth/cookie";
+import { JWT } from 'next-auth/jwt';
 
 interface MyToken extends JWT {
-    backendCookie?: string;
-    sessionExpiresAt?: string;
-    invalidated?: boolean;
+    sessionExpiresAt?: string; // ISO string of backend session expiry
 }
 
 export const authOptions: AuthOptions = {
@@ -14,70 +12,15 @@ export const authOptions: AuthOptions = {
         CredentialsProvider({
             name: 'Credentials',
             credentials: {
-                identifier: { label: 'Email or Employee ID', type: 'text' },
-                password: { label: 'Password', type: 'password' },
-                isOAuthCallback: { type: 'hidden' },
                 userJSON: { type: 'hidden' },
             },
             async authorize(credentials) {
-                // Handle OAuth callback - user data already fetched server-side
-                if (credentials?.isOAuthCallback === 'true' && credentials?.userJSON) {
-                    try {
-                        const user = JSON.parse(credentials.userJSON);
-                        if (user && user.id) {
-                            // User object already has backendCookie and sessionExpiresAt
-                            return user;
-                        }
-                    } catch (error) {
-                        console.error("Failed to parse userJSON during OAuth callback", error);
-                        return null;
-                    }
+                if (!credentials?.userJSON) return null;
+                try {
+                    const user = JSON.parse(credentials.userJSON);
+                    if (user && user.id) return user;
+                } catch {
                     return null;
-                }
-
-                // Handle traditional credentials login
-                if (credentials?.identifier && credentials?.password) {
-                    const { identifier, password } = credentials;
-
-                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                    const isEmail = emailRegex.test(identifier);
-
-                    const loginUrl = isEmail
-                        ? `${process.env.API_URL}/auth/user`
-                        : `${process.env.API_URL}/auth/employee`;
-
-                    try {
-                        const res = await fetch(loginUrl, {
-                            method: 'POST',
-                            body: JSON.stringify(
-                                isEmail
-                                    ? { email: identifier, password }
-                                    : { employeeCode: identifier, password }
-                            ),
-                            headers: { 'Content-Type': 'application/json' },
-                        });
-
-                        if (!res.ok) {
-                            return null;
-                        }
-
-                        const apiResponse = await res.json();
-                        const user = apiResponse.data;
-
-                        const setCookie = res.headers.get('set-cookie') ?? res.headers.get('Set-Cookie');
-                        const sessionExpiresAt = parseSetCookieExpiry(setCookie ?? undefined);
-
-                        if (user) {
-                            user.backendCookie = setCookie?.split(';')[0];
-                            user.sessionExpiresAt = sessionExpiresAt?.toISOString();
-                            return user;
-                        }
-
-                        return null;
-                    } catch (error) {
-                        console.error("Credentials login error:", error);
-                        return null;
-                    }
                 }
                 return null;
             },
@@ -89,55 +32,59 @@ export const authOptions: AuthOptions = {
     },
 
     callbacks: {
-        async jwt({ token, user }): Promise<MyToken> {
+        async jwt({ token, user }) {
             const t = token as MyToken;
 
+            // On first login, store sessionExpiresAt and user info
             if (user) {
-                const backendUser = user as User & {
-                    backendCookie?: string;
-                    sessionExpiresAt?: string;
-                };
-                token.backendCookie = backendUser.backendCookie;
-                token.sessionExpiresAt = backendUser.sessionExpiresAt;
-                token.id = user.id;
-                token.name = user.name;
-                token.email = user.email;
+                const backendUser = user as User & { sessionExpiresAt?: string };
+                t.sessionExpiresAt = backendUser.sessionExpiresAt;
+                t.id = backendUser.id;
+                t.name = backendUser.name;
+                t.email = backendUser.email;
             }
 
-            // Check if backend session has expired
-            if (token.sessionExpiresAt && new Date(token.sessionExpiresAt) < new Date()) {
-                console.log('Backend session expired - invalidating token');
-                return {
-                    ...t,
-                    id: '',
-                    name: '',
-                    email: '',
-                    backendCookie: undefined,
-                    sessionExpiresAt: undefined,
-                    invalidated: true,
-                };
+            // Optional: refresh the backend session if it's close to expiring
+            if (t.sessionExpiresAt) {
+                const expiryTime = new Date(t.sessionExpiresAt).getTime();
+                const now = Date.now();
+                const timeLeft = expiryTime - now;
+
+                // Refresh 2 minutes before expiry
+                if (timeLeft < 2 * 60 * 1000) {
+                    try {
+                        const res = await fetch(`${process.env.API_URL}/auth/refresh-session`, {
+                            method: 'GET',
+                            credentials: 'include',
+                        });
+
+                        if (res.ok) {
+                            const newCookie = res.headers.get('set-cookie') ?? res.headers.get('Set-Cookie');
+                            const newExpiry = parseSetCookieExpiry(newCookie ?? undefined);
+                            if (newExpiry) {
+                                t.sessionExpiresAt = newExpiry.toISOString();
+                            }
+                        }
+                    } catch (err) {
+                        console.error('Failed to refresh backend session:', err);
+                        // Don't invalidate token; just leave expiry as is
+                    }
+                }
             }
 
-            return token;
+            return t;
         },
 
         async session({ session, token }) {
             const t = token as MyToken;
 
-            if (!t || t.invalidated) {
-                session.user = { id: '', name: '', email: '' };
-                session.backendCookie = undefined;
-                session.sessionExpiresAt = undefined;
-                return session;
+            // Map JWT fields to session
+            if (session.user) {
+                session.user.id = t.id as string;
+                session.user.name = t.name as string;
+                session.user.email = t.email as string;
             }
-
-            if (token && session.user) {
-                session.backendCookie = token.backendCookie;
-                session.user.id = token.id as string;
-                session.user.name = token.name as string;
-                session.user.email = token.email as string;
-                session.sessionExpiresAt = token.sessionExpiresAt;
-            }
+            session.sessionExpiresAt = t.sessionExpiresAt;
 
             return session;
         },
@@ -148,8 +95,7 @@ export const authOptions: AuthOptions = {
     },
 };
 
-const handler = NextAuth(authOptions);
-
+export const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST };
 
 export async function getSession() {

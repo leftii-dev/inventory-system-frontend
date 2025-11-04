@@ -3,9 +3,11 @@ import NavLinks from "./NavLinks";
 import Logo from "./Logo";
 import { Menu, X } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
+import { useAutoRefreshSession } from "@/lib/hooks/useAutoRefreshSession";
 
 
 export default function Navbar() {
+    useAutoRefreshSession()
     const [isOpen, setIsOpen] = useState(false);
 
     const toggleMenu = () => {

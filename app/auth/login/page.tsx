@@ -1,25 +1,23 @@
+// /app/auth/login/page.tsx
 'use client';
 
-import { signIn, signOut } from 'next-auth/react';
+import { signOut } from 'next-auth/react';
 import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import SubmitButton from "@/components/SubmitButton";
-import TextInput from "@/components/TextInput";
+import {useSearchParams } from 'next/navigation';
 import ImageButton from '@/components/ImageButton';
 import { useSession } from "next-auth/react";
+import LoginForm from "@/app/auth/login/LoginForm";
+import {UserResponseSession} from "@/lib/auth/auth.actions";
+import {emptyApiResponse} from "@/lib/types/validation.types";
 
 export default function LoginPage() {
-    const router = useRouter();
     const searchParams = useSearchParams();
-    const [identifier, setIdentifier] = useState('');
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
 
     const { status } = useSession();
 
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
-    const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
+    const callbackUrl = searchParams.get('callbackUrl') || '/';
     const reason = searchParams.get('reason');
 
     useEffect(() => {
@@ -56,25 +54,6 @@ export default function LoginPage() {
         );
     }
 
-    const handleCredentialsLogin = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setError(null);
-
-        const result = await signIn('credentials', {
-            redirect: false,
-            identifier,
-            password,
-        });
-
-        console.log(result)
-
-        if (result?.error) {
-            setError('Invalid credentials. Please try again.');
-        } else {
-            router.push(callbackUrl);
-        }
-    };
-
     return (
         <div className="max-h-2/3 space-y-10 my-auto max-w-2xl mx-auto flex flex-col justify-center items-center p-10 border border-gray-300 rounded-lg shadow-lg">
             <h2 className="text-xl font-bold mb-2">Login</h2>
@@ -91,31 +70,10 @@ export default function LoginPage() {
                 </div>
             )}
 
-            <form onSubmit={handleCredentialsLogin} className="flex flex-col min-w-xl items-center gap-y-2.5 w-full">
-                {error && <p className="text-red-700">{error}</p>}
-
-                <TextInput
-                    type="text"
-                    value={identifier}
-                    onChange={(e) => setIdentifier(e.target.value)}
-                    placeholder="Email or Employee ID"
-                    required
-                />
-
-                <TextInput
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Password"
-                    required
-                />
-
-                <div className="flex w-full justify-end">
-                    <SubmitButton>
-                        Login
-                    </SubmitButton>
-                </div>
-            </form>
+            <LoginForm
+                initialData ={emptyApiResponse<UserResponseSession>()}
+                callbackUrl = {callbackUrl}
+            />
 
             <div className="text-center">OR</div>
 
