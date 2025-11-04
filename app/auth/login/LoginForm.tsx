@@ -3,57 +3,65 @@
 
 import FormCard from "@/components/form/FormCard";
 import {ActionResult} from "@/lib/utils/api.actions";
-import {LoginUserSchema} from "@/lib/auth/auth.schemas";
-import {z} from "zod";
 import {loginAction} from "@/lib/auth/auth.actions";
 import SubmitButton from "@/components/SubmitButton";
 import FormInput from "@/components/form/FormInput";
 import {useRouter} from "next/navigation";
 import {signIn, useSession} from "next-auth/react";
 import {useEffect, useRef} from "react";
+import {UserResponseSession} from '@/lib/auth/auth.actions'
+import {ApiResponseDto} from "@/lib/types/validation.types";
 
 export default function LoginForm({
     initialData,
     callbackUrl
 }:{
-    initialData: z.infer<typeof LoginUserSchema>,
+    initialData: ApiResponseDto<UserResponseSession>,
     callbackUrl: string
 }) {
-    const router = useRouter();
     const hasRedirected = useRef(false);
 
     return (
-        <FormCard<ActionResult<typeof LoginUserSchema>>
+        <FormCard<ActionResult<UserResponseSession>>
             action={loginAction}
             initialState={{
-                success: true,
-                data: initialData,
+                ok: true,
+                response: initialData,
+                errors:{}
             }}
         >
             {(state) => {
-                if(!state.success) {
+                if(!state.ok) {
                     state.errors = {...state.errors, general: 'Invalid email or password'}
                 }
 
                 const ClientEffects = () => {
                     const router = useRouter();
-                    const { data: session, status } = useSession();
+                    useSession();
 
                     useEffect(() => {
                         if (
-                            state.success &&
-                            'data' in state &&
+                            state.ok &&
                             !hasRedirected.current &&
-                            state.data?.email
+                            state.response?.data.email
                         ) {
-                            signIn("credentials", { redirect: false, identifier: state.data.email })
+                            signIn("credentials", {
+                                redirect: false,
+                                userJSON: JSON.stringify({
+                                    id: state.response?.data.id,
+                                    name: state.response?.data.name,
+                                    email: state.response?.data.email,
+                                    backendCookie: state.response?.data.backendCookie,
+                                    sessionExpiresAt: state.response?.data.sessionExpiresAt
+                                    })
+                            })
                                 .then((res) => {
                                     if(res?.ok) {
                                         router.push(callbackUrl);
                                     }
                                 });
                         }
-                    }, [state.success, router, callbackUrl]);
+                    }, [router]);
 
                     return null; // no UI
                 };
@@ -62,7 +70,7 @@ export default function LoginForm({
                         <div>
                             <ClientEffects />
                             <FormInput
-                                key={`email-${state.success}`}
+                                key={`email-${state.ok}`}
                                 label={'Email:'}
                                 name={'email'}
                                 type={'text'}

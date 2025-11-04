@@ -14,8 +14,10 @@ export default withAuth({
         authorized: ({ token, req }) => {
             const t = token as MyToken | undefined;
 
+            console.log('MiddleWare: token', token)
             // No token → no-session
             if (!t) {
+                console.log('MiddleWare: No Token')
                 const url = req.nextUrl.clone();
                 url.pathname = '/auth/login';
                 url.searchParams.set('reason', 'no-session');
@@ -25,6 +27,7 @@ export default withAuth({
 
             // Expired backend session → session-expired
             if (t.sessionExpiresAt && new Date(t.sessionExpiresAt) < new Date()) {
+                console.log('MiddleWare: Session expired');
                 const url = req.nextUrl.clone();
                 url.pathname = '/auth/login';
                 url.searchParams.set('reason', 'session-expired');

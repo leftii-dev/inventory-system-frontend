@@ -34,7 +34,6 @@ export default function OAuthCallbackClient({ user, backendCookie, sessionExpire
                 });
 
                 const result = await signIn('credentials', {
-                    isOAuthCallback: 'true',
                     userJSON: payload,
                     redirect: false,
                 });

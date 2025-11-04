@@ -1,5 +1,4 @@
 import {z} from 'zod';
-import {error} from "next/dist/build/output/log";
 
 // Schema for user registration
 export const RegisterUserSchema = z.object({
@@ -19,6 +18,7 @@ export const RegisterUserSchema = z.object({
     message: "Passwords do not match",
     path: ["confirmPassword"],
 })
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     .transform(({confirmPassword , ...rest}) => rest);
 
 export const LoginUserSchema = z.object({
@@ -29,3 +29,11 @@ export const LoginUserSchema = z.object({
     ),
     password: z.string({ error: "Invalid email or password" }),
 })
+
+export const LoginResponseSchema = z.object({
+    id: z.string().optional(),
+    name: z.string().optional(),
+    email: z.string().optional(),
+    backendCookie: z.string().optional(),
+    sessionExpiresAt: z.string().optional().nullable(),
+});

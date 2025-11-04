@@ -3,56 +3,40 @@
 import { z } from 'zod';
 import { formDataToTypedObject, validateSchema, extractErrors } from "@/lib/utils/validate";
 import { getSession } from "@/app/api/auth/[...nextauth]/route";
-import type {Dispatcher, RequestCredentials} from "undici-types";
+import type { Dispatcher } from "undici-types";
+import {ApiResponseDto, emptyApiResponse} from "@/lib/types/validation.types";
+import {cookies} from "next/headers";
 
 type HttpMethod = Dispatcher.HttpMethod;
 type SafeHttpMethod = HttpMethod | 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
 
-type ActionResultWithSchema<T extends z.ZodTypeAny> =
-    | { success: true; data: z.infer<T>, unauthorized?: false}
-    | { success: false; errors: Record<string, string>; unauthorized?: boolean };
+const isServer = typeof window === 'undefined';
 
-type ActionResultNoSchema =
-    | { success: true; data: Record<string, unknown>, unauthorized?: false }
-    | { success: false; errors: Record<string, string>; unauthorized?: boolean };
+// T is the type of response data
+export type ActionResult<D = unknown> = {
+    ok: boolean;
+    response: ApiResponseDto<D>;
+    errors: Record<string, string>;
+    unauthorized?: boolean;
+    setCookie?: string;
+};
 
-export type ActionResult<T extends z.ZodTypeAny | undefined = undefined> =
-    T extends z.ZodTypeAny ? ActionResultWithSchema<T> : ActionResultNoSchema;
 
-type BaseOptions = {
+
+type Options = {
     endpoint: string;
     method?: SafeHttpMethod;
     numberFields?: string[];
     booleanFields?: string[];
     requireAuth?: boolean;
-};
-
-type SchemaOptions<T extends z.ZodTypeAny> = BaseOptions & {
-    schema: T;
-    extraData?: Partial<z.infer<T>>;
-};
-
-type NoSchemaOptions = BaseOptions & {
-    schema?: undefined;
+    schema?: z.ZodTypeAny;
     extraData?: Record<string, unknown>;
 };
 
-// Overloads
-export async function apiAction<T extends z.ZodTypeAny>(
-    options: SchemaOptions<T>,
+export async function apiAction<D = unknown>(
+    options: Options,
     formData?: FormData
-): Promise<ActionResultWithSchema<T>>;
-
-export async function apiAction(
-    options: NoSchemaOptions,
-    formData?: FormData
-): Promise<ActionResultNoSchema>;
-
-// Implementation
-export async function apiAction<T extends z.ZodTypeAny>(
-    options: SchemaOptions<T> | NoSchemaOptions,
-    formData?: FormData
-): Promise<ActionResultWithSchema<T> | ActionResultNoSchema> {
+): Promise<ActionResult<D>> {
     const {
         schema,
         endpoint,
@@ -64,35 +48,37 @@ export async function apiAction<T extends z.ZodTypeAny>(
     } = options;
 
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-    let credentials: RequestCredentials | undefined = undefined;
+
 
     if (requireAuth) {
         const session = await getSession();
         if (!session) {
             return {
-                success: false,
+                ok: false,
+                response: emptyApiResponse<D>(),
                 errors: { general: 'Unauthorized' },
                 unauthorized: true,
-            }
+            };
         }
 
-        if (session.backendCookie) {
-            headers['Cookie'] = session.backendCookie;
-        } else {
-            credentials = 'include';
+        if (isServer) {
+            const cookieStore = await cookies()
+            const backendCookie = cookieStore.get('SESSION')?.value as string
+            headers['Cookie'] = `SESSION=${backendCookie}`;
         }
+
     }
 
     let bodyData: Record<string, unknown>;
-
     if (schema && formData) {
         const input = formDataToTypedObject(formData, numberFields, booleanFields);
         const validation = validateSchema(schema, input);
-
         if (!validation.success) {
-            return { success: false, errors: extractErrors(validation.errors) };
+            return {
+                ok: false,
+                response: emptyApiResponse<D>(),
+                errors: extractErrors(validation.errors) };
         }
-
         bodyData = { ...(validation.data as Record<string, unknown>), ...extraData };
     } else {
         bodyData = { ...extraData };
@@ -102,36 +88,47 @@ export async function apiAction<T extends z.ZodTypeAny>(
         const response = await fetch(`${process.env.API_URL}${endpoint}`, {
             method,
             headers,
-            credentials,
+            credentials: isServer ? undefined : 'include',
             body: ['GET', 'DELETE'].includes(method) ? undefined : JSON.stringify(bodyData),
         });
 
-        // Handle authentication/authorization failures
+        // Failed Request Unauthorized
         if (response.status === 401 || response.status === 403) {
+            console.error(response);
             return {
-                success: false,
-                errors: { general: 'Session expired'},
+                ok: false,
+                response: emptyApiResponse<D>(),
+                errors: { general: 'Session expired' },
                 unauthorized: true,
-            }
-        }
-
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            console.error('API Error:', response.status, errorData);
-            return {
-                success: false,
-                errors: { general: errorData.message || `Request failed with status ${response.status}` }
             };
         }
 
-        const json = await response.json();
-        return { success: true, data: json.data || json };
+        // Failed Request
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            return {
+                ok: false,
+                response: emptyApiResponse<D>(),
+                errors: { general: errorData.message || `Request failed with status ${response.status}` },
+            };
+        }
+
+        // Successful Request
+        const json = (await response.json()) as ApiResponseDto<D>;
+        const rawCookie = response.headers.get('set-cookie') ?? response.headers.get('Set-Cookie');
+        const stripSetCookie = rawCookie?.match(/SESSION=([^;]+)/)?.[1];
+        return {
+            ok: true,
+            response: json,
+            setCookie: stripSetCookie,
+            errors: {} as Record<string, string>,
+        };
 
     } catch (err: unknown) {
-        console.error('Network error:', err);
         return {
-            success: false,
-            errors: { general: (err as Error).message || 'Network error' }
+            ok: false,
+            response: emptyApiResponse<D>(),
+            errors: { general: (err as Error).message || 'Network error' },
         };
     }
 }
