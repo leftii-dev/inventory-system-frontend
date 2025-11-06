@@ -40,10 +40,10 @@ export async function apiAction<D = unknown>(
     const {
         schema,
         endpoint,
-        method = 'POST',
+        method = 'GET',
         numberFields = [],
         booleanFields = [],
-        requireAuth = true,
+        requireAuth = false,
         extraData = {},
     } = options;
 
