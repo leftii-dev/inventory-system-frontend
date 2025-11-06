@@ -29,3 +29,4 @@ export function emptyApiResponse<T>(): ApiResponseDto<T> {
     };
 }
 
+export type BigDecimalLike = string | number;
