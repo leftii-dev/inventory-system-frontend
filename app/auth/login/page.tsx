@@ -21,8 +21,9 @@ export default function LoginPage() {
     const reason = searchParams.get('reason');
 
     useEffect(() => {
+        console.log('Checking session')
         const logoutIfExpired = async () => {
-            if (reason === 'session-expired') {
+            if (reason === 'session-expired' || reason === 'no-session') {
                 setLoading(true);
                 await signOut({ redirect: false });
                 setLoading(false);
