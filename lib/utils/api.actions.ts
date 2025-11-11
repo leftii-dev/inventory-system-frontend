@@ -1,3 +1,4 @@
+// lib/utils/api.actions.ts
 'use server';
 
 import { z } from 'zod';
@@ -12,16 +13,14 @@ type SafeHttpMethod = HttpMethod | 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
 
 const isServer = typeof window === 'undefined';
 
-// T is the type of response data
 export type ActionResult<D = unknown> = {
     ok: boolean;
     response: ApiResponseDto<D>;
     errors: Record<string, string>;
     unauthorized?: boolean;
     setCookie?: string;
+    sessionExtended?: boolean; // New flag
 };
-
-
 
 type Options = {
     endpoint: string;
@@ -49,7 +48,6 @@ export async function apiAction<D = unknown>(
 
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
 
-
     if (requireAuth) {
         const session = await getSession();
         if (!session) {
@@ -66,13 +64,13 @@ export async function apiAction<D = unknown>(
             const backendCookie = cookieStore.get('SESSION')?.value as string
             headers['Cookie'] = `SESSION=${backendCookie}`;
         }
-
     }
 
     let bodyData: Record<string, unknown>;
     if (schema && formData) {
         const input = formDataToTypedObject(formData, numberFields, booleanFields);
         const validation = validateSchema(schema, input);
+
         if (!validation.success) {
             return {
                 ok: false,
@@ -113,15 +111,36 @@ export async function apiAction<D = unknown>(
             };
         }
 
-        // Successful Request
-        const json = (await response.json()) as ApiResponseDto<D>;
+        let json: ApiResponseDto<D>;
+
+        const contentType = response.headers.get('content-type');
+        const hasJsonContent = contentType && contentType.includes('application/json');
+
+        if (response.status === 204 || !hasJsonContent) {
+            json = {
+                data: undefined as D,
+                message: 'Success',
+                success: true,
+                timestamp: new Date().toISOString(),
+                validationErrors: []
+            } as ApiResponseDto<D>;
+        } else {
+            const text = await response.text();
+            json = text ? JSON.parse(text) : emptyApiResponse<D>();
+        }
+
         const rawCookie = response.headers.get('set-cookie') ?? response.headers.get('Set-Cookie');
         const stripSetCookie = rawCookie?.match(/SESSION=([^;]+)/)?.[1];
+
+        // Mark that session was likely extended by Spring
+        const sessionExtended = requireAuth && response.ok;
+
         return {
             ok: true,
             response: json,
             setCookie: stripSetCookie,
             errors: {} as Record<string, string>,
+            sessionExtended,
         };
 
     } catch (err: unknown) {

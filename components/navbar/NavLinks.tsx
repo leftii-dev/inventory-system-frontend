@@ -8,10 +8,9 @@ export default function NavLinks() {
     const { data: session } = useSession();
     const links = [
         { href: "/", label: "Home" },
-        { href: "/dashboard", label: "Dashboard" },
         { href: "/about", label: "About" },
         { href: "/contact", label: "Contact" },
-        ...(session ? [{ href: "/profile", label: "My Profile" }] : []),
+        ...(session ? [{ href: "/profile", label: "My Profile" }, { href: "/dashboard", label: "Dashboard" }] : []),
     ]
     const currentPath = usePathname();
 

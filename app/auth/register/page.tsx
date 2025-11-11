@@ -24,7 +24,7 @@ export default function RegisterPage() {
         const formData = new FormData(form);
         const result = await registerUserAction(formData);
 
-        if(!result.success) {
+        if(!result.ok) {
             setErrors(extractErrors(result.errors));
         } else {
             setSuccessMessage("Registration successful! Check your email to verify your account.");

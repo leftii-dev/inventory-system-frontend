@@ -27,7 +27,7 @@ export default function LoginForm({
             initialState={{
                 ok: true,
                 response: initialData,
-                errors:{}
+                errors: {}
             }}
         >
             {(state) => {
