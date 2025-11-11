@@ -14,7 +14,7 @@ export function formDataToTypedObject<T>(
         if (numberFields.includes(key)) {
             obj[key] = val !== "" ? Number(val) : undefined;
         } else if (booleanFields.includes(key)) {
-            obj[key] = val === "true";
+            obj[key] = val === "on" || val === 'true';
         } else {
             obj[key] = val; // string or undefined
         }
@@ -29,6 +29,8 @@ export function validateSchema<T extends z.ZodTypeAny>(
     data: unknown
 ): ValidationResult<T> {
     const result = schema.safeParse(data);
+
+    console.log(result)
 
     if (!result.success) {
         const errors = z.treeifyError(result.error);

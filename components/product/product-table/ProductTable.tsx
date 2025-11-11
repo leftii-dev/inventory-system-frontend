@@ -8,7 +8,7 @@ import {
     ProductResponse
 } from "@/lib/products/product.types";
 import ProductLine from "@/components/product/product-table/ProductLine";
-import {useRouter, useSearchParams} from "next/navigation";
+import {useRouter} from "next/navigation";
 import {useEffect, useState} from "react";
 import StringSearch from "@/components/StringSearch";
 import AboveBelowEqualsSearch from "@/components/AboveBelowEqualSearch";
@@ -22,7 +22,6 @@ export default function ProductTable(
     {initialProducts: ProductResponse[], categories: CategoryResponse[], brands: BrandResponse[], discounts: DiscountResponse[]}){
     const [products, setProducts] = useState<ProductResponse[]>(initialProducts);
     const router = useRouter();
-    const params = useSearchParams();
     const [filters, setFilters] = useState<ProductFilters>({});
 
     const categoryPairs = categories.map(({id, name}) => ({id, name}));
@@ -35,8 +34,8 @@ export default function ProductTable(
                 Object.entries(filters).filter(([_, v]) => v !== undefined && v !== '')
             );
             const query = toQueryString(cleaned);
-            router.push(`/dashboard${query}`);
-
+            router.push(`/dashboard/products${query}`);
+    
             const res = await getProducts(cleaned);
             if (res.response?.data) setProducts(res.response.data);
         };

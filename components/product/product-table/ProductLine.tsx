@@ -36,6 +36,7 @@ export default function ProductLine({product}: {product: ProductResponse}) {
                             src={defaultImage?.imageUrl ?? `/images/product-placeholder.svg`}
                             alt={defaultImage?.altText ?? `Placeholder for missing product image`}
                             fill
+                            unoptimized
                             className={`object-contain hover:scale-95`}
                             onClick={(e) => {
                                 e.stopPropagation();

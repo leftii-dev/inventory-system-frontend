@@ -5,8 +5,6 @@ import { useSession } from 'next-auth/react';
 export function useAutoRefreshSession() {
     const { data: session, update, status } = useSession();
     const sessionExpiresAt = session?.sessionExpiresAt;
-
-    // Track if we've already scheduled a refresh for this expiry time
     const scheduledExpiryRef = useRef<string | null>(null);
 
     useEffect(() => {
@@ -15,11 +13,6 @@ export function useAutoRefreshSession() {
         if (status !== 'authenticated') return;
         if (!sessionExpiresAt) return;
 
-        console.log(sessionExpiresAt)
-        console.log(Date.now())
-        console.log(new Date(sessionExpiresAt).getTime() < Date.now() ? 'expired' : 'valid')
-
-        // Prevent re-scheduling for the same expiry time
         if (scheduledExpiryRef.current === sessionExpiresAt) {
             return;
         }
@@ -28,7 +21,7 @@ export function useAutoRefreshSession() {
 
         const expiry = new Date(sessionExpiresAt).getTime();
         const now = Date.now();
-        const timeUntilRefresh = expiry - now - 2 * 60 * 1000; // 2 min before expiry
+        const timeUntilRefresh = expiry - now - 2 * 60 * 1000;
 
         if (timeUntilRefresh <= 0) {
             console.log('[useAutoRefreshSession] Session expired, refreshing immediately');

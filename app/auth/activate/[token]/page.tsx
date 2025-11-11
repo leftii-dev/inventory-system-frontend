@@ -20,7 +20,7 @@ export default async function ActivatePage({params}: ActivatePageProps) {
             console.log(token)
             const result: ActionResult = await activateUserAction(token);
 
-            if (result.success) {
+            if (result.ok) {
                 status = 'success';
                 message = 'Your account has been successfully activated! You can now log in.';
             } else {

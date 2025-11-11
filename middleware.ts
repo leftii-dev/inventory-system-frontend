@@ -16,9 +16,16 @@ export async function middleware(req: NextRequest) {
     if (!token) {
         console.log('🔒 [Middleware] No token, redirecting');
         const url = req.nextUrl.clone();
-        url.pathname = '/auth/login';
-        url.searchParams.set('reason', 'no-session');
-        url.searchParams.set('callbackUrl', req.nextUrl.pathname);
+        if(req.method !== 'POST'){
+            url.pathname = '/auth/login';
+            url.searchParams.set('reason', 'no-session');
+            url.searchParams.set('callbackUrl', req.nextUrl.pathname);
+        } else {
+            return new NextResponse(
+                JSON.stringify({ error: 'Session expired' }),
+                { status: 401, headers: { 'Content-Type': 'application/json' } }
+            );
+        }
         return NextResponse.redirect(url);
     }
 
@@ -26,9 +33,16 @@ export async function middleware(req: NextRequest) {
     if (token.sessionExpiresAt && new Date(token.sessionExpiresAt) < new Date()) {
         console.log('🔒 [Middleware] Session expired, redirecting');
         const url = req.nextUrl.clone();
-        url.pathname = '/auth/login';
-        url.searchParams.set('reason', 'session-expired');
-        url.searchParams.set('callbackUrl', req.nextUrl.pathname);
+        if(req.method !== 'POST'){
+            url.pathname = '/auth/login';
+            url.searchParams.set('reason', 'session-expired');
+            url.searchParams.set('callbackUrl', req.nextUrl.pathname);
+        } else {
+            return new NextResponse(
+                JSON.stringify({ error: 'Session expired' }),
+                { status: 401, headers: { 'Content-Type': 'application/json' } }
+            );
+        }
         return NextResponse.redirect(url);
     }
 
