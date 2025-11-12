@@ -1,7 +1,7 @@
 import {getBrands, getCategories, getDiscounts, getProducts} from "@/lib/products/product.actions";
-import ProductTable from "@/components/product/product-table/ProductTable";
 import {ProductFilters} from "@/lib/products/product.types";
 import {getParam} from "@/lib/utils/util.params";
+import ResponsiveProductTable from "@/components/product/product-table/ResponsiveProductTable";
 
 export default async function DashboardProductsPage({
                                                 searchParams
@@ -42,7 +42,7 @@ export default async function DashboardProductsPage({
 
     return (
         <div>
-            <ProductTable
+            <ResponsiveProductTable
                 initialProducts={products.response.data}
                 categories={categories.response.data}
                 brands={brands.response.data}

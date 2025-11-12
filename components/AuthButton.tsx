@@ -1,11 +1,13 @@
 "use client";
 
-import { useSession, signOut } from "next-auth/react";
+import { useSession } from "@/lib/hooks/useSession";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function AuthButton() {
-    const { data: session, status } = useSession({ required: false });
+    const { user, isLoading } = useSession();
+    const router = useRouter();
     const [hydrated, setHydrated] = useState(false);
 
     // Ensure we only render after hydration to prevent null flashes
@@ -15,19 +17,25 @@ export default function AuthButton() {
 
     const handleSignOut = async () => {
         try {
+            // Call backend logout
             await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/auth/logout`, {
                 method: "POST",
                 credentials: "include",
             });
+
+            // Refresh the page to clear client-side state
+            router.push("/auth/login");
+            router.refresh();
         } catch (error) {
             console.error("Failed to sign out from backend:", error);
+            // Still redirect even if backend call fails
+            router.push("/auth/login");
+            router.refresh();
         }
-
-        await signOut({ callbackUrl: "/auth/login" });
     };
 
-    // Show nothing until client hydration completes
-    if (!hydrated || status === "loading") {
+    // Show loading skeleton until client hydration completes
+    if (!hydrated || isLoading) {
         return (
             <div className="flex justify-end items-end gap-3 md:mb-4">
                 <div className="md:h-12 md:w-52 bg-gray-200 rounded-md animate-pulse"></div>
@@ -35,7 +43,8 @@ export default function AuthButton() {
         );
     }
 
-    if (session) {
+    // User is logged in
+    if (user) {
         return (
             <div className="flex flex-col w-full md:flex-row md:justify-end md:items-end md:gap-3 md:whitespace-nowrap md:mb-4">
                 <button
@@ -48,6 +57,7 @@ export default function AuthButton() {
         );
     }
 
+    // User is not logged in
     return (
         <div className="flex flex-col w-full items-center gap-y-2 md:flex-row md:justify-end md:items-end md:gap-3 md:mb-4">
             <Link href="/auth/login" className="w-full">

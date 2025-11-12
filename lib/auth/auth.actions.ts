@@ -3,6 +3,7 @@ import {LoginUserSchema, RegisterUserSchema} from "@/lib/auth/auth.schemas";
 import {ActionResult, apiAction} from "@/lib/utils/api.actions";
 import {cookies} from "next/headers";
 import {UserResponse} from "@/lib/users/users.types"
+import { revalidatePath } from 'next/cache';
 
 export async function registerUserAction(formData: FormData): Promise<ActionResult<typeof RegisterUserSchema>> {
     return apiAction({
@@ -24,12 +25,11 @@ export async function activateUserAction(token: string): Promise<ActionResult> {
     })
 }
 
-export type UserResponseSession = UserResponse & {backendCookie: string, sessionExpiresAt: string}
 
 export async function loginAction(
     prevState: ActionResult<UserResponse>,
     formData: FormData,
-): Promise<ActionResult<UserResponseSession>> {
+): Promise<ActionResult<UserResponse>> {
     const emailOrCode = formData.get('email') as string;
 
     const result = await apiAction<UserResponse>({
@@ -37,17 +37,12 @@ export async function loginAction(
         endpoint: /^\d{6}$/.test(emailOrCode) ? '/auth/employee' : '/auth/user',
         method: 'POST',
         requireAuth: false,
-    }, formData)
-    if (result.ok){
-        const backendCookie = result.setCookie
-        const sessionExpiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString();
+    }, formData);
 
-        result.response.data = {
-            ...result.response.data,
-            backendCookie,
-            sessionExpiresAt
-        } as UserResponseSession;
+    if (result.ok) {
+        const backendCookie = result.setCookie;
 
+        // Set the SESSION cookie
         if (backendCookie) {
             const cookieStore = await cookies();
             cookieStore.set({
@@ -61,6 +56,33 @@ export async function loginAction(
             });
         }
     }
-    return result as ActionResult<UserResponseSession>;
 
+    return result;
+}
+
+
+
+export async function logoutAction() {
+    const cookieStore = await cookies();
+
+    // Call backend logout
+    const sessionCookie = cookieStore.get('SESSION')?.value;
+    if (sessionCookie) {
+        try {
+            await fetch(`${process.env.API_URL}/auth/logout`, {
+                method: 'POST',
+                headers: {
+                    'Cookie': `SESSION=${sessionCookie}`,
+                },
+            });
+        } catch (error) {
+            console.error('Backend logout failed:', error);
+        }
+    }
+
+    // Delete the cookie
+    cookieStore.delete('SESSION');
+
+    // Revalidate all pages
+    revalidatePath('/', 'layout');
 }

@@ -3,11 +3,9 @@ import NavLinks from "./NavLinks";
 import Logo from "./Logo";
 import { Menu, X } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
-import { useAutoRefreshSession } from "@/lib/hooks/useAutoRefreshSession";
 
 
 export default function Navbar() {
-    useAutoRefreshSession()
     const [isOpen, setIsOpen] = useState(false);
 
     const toggleMenu = () => {
@@ -32,7 +30,7 @@ export default function Navbar() {
     }, [isOpen])
 
     return (
-        <nav className="flex flex-col justify-between md:mx-16 md:flex-row md:justify-between md:items-center p-4 ">
+        <nav className="flex flex-col justify-between md:px-16 md:flex-row md:justify-between md:items-center shadow p-4 md:mb-4">
             <div className={`relative flex w-full justify-center items-center p-4 md:p-0 md:justify-start`}>
                 <div className={``}>
                     <Logo />
