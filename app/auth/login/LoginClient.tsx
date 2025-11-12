@@ -1,19 +1,20 @@
 'use client';
 
-import { signOut } from 'next-auth/react';
 import { useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import ImageButton from '@/components/ImageButton';
-import { useSession } from "next-auth/react";
+import { useSession } from "@/lib/hooks/useSession";
 import LoginForm from "@/app/auth/login/LoginForm";
-import { UserResponseSession } from "@/lib/auth/auth.actions";
+import { UserResponse } from "@/lib/users/users.types";
 import { emptyApiResponse } from "@/lib/types/validation.types";
+import { logoutAction } from "@/lib/auth/auth.actions";
 
 export default function LoginClient() {
     const searchParams = useSearchParams();
+    const router = useRouter();
     const [loading, setLoading] = useState(false);
 
-    const { status } = useSession();
+    const { user, isLoading } = useSession();
 
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
     const callbackUrl = searchParams.get('callbackUrl') || '/';
@@ -24,21 +25,25 @@ export default function LoginClient() {
 
         const logoutIfExpired = async () => {
             if (
-                (reason === 'session-expired' || reason === 'no-session') &&
-                status === 'authenticated' &&
+                (reason === 'session-expired' || reason === 'no-session' || reason === 'session-invalid') &&
+                user &&
                 !hasSignedOut
             ) {
                 hasSignedOut = true;
                 setLoading(true);
-                await signOut({ redirect: false });
+
+                // Clear the session
+                await logoutAction();
+
                 setLoading(false);
             }
         };
 
         logoutIfExpired();
-    }, [reason, status]);
+    }, [reason, user]);
 
-    if (loading || status === 'loading') {
+    // Show loading state
+    if (loading || isLoading) {
         return (
             <div className="flex justify-center items-center min-h-screen">
                 <div className="max-w-2xl w-full p-10 border border-gray-300 rounded-lg shadow-lg flex flex-col gap-y-2.5">
@@ -50,10 +55,19 @@ export default function LoginClient() {
         );
     }
 
-    if (status === 'authenticated' && !loading && reason !== 'session-expired') {
+    // If already logged in and not handling an expiry, show message
+    if (user && !loading && !['session-expired', 'no-session', 'session-invalid'].includes(reason || '')) {
         return (
             <div className="flex justify-center items-center min-h-screen">
-                <p className="text-center mt-10">You are already logged in.</p>
+                <div className="text-center space-y-4">
+                    <p>You are already logged in.</p>
+                    <button
+                        onClick={() => router.push('/dashboard')}
+                        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                    >
+                        Go to Dashboard
+                    </button>
+                </div>
             </div>
         );
     }
@@ -74,8 +88,14 @@ export default function LoginClient() {
                 </div>
             )}
 
+            {reason === 'session-invalid' && (
+                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded text-center w-full" role="alert">
+                    <span>Your session is invalid. Please log in again.</span>
+                </div>
+            )}
+
             <LoginForm
-                initialData={emptyApiResponse<UserResponseSession>()}
+                initialData={emptyApiResponse<UserResponse>()}
                 callbackUrl={callbackUrl}
             />
 

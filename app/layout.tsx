@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
-import AuthProvider from "./providers";
 import React from "react";
 import Navbar from "@/components/navbar/Navbar";
 
@@ -33,12 +32,10 @@ export default function RootLayout({
           <body
             className={`${inter.variable} ${mono.variable} antialiased`}
           >
-          <AuthProvider>
-              <Navbar />
-              <main className={`w-10/12 mx-auto`}>
+            <Navbar />
+              <main className={`w-11/12 mx-auto`}>
                 {children}
               </main>
-          </AuthProvider>
           </body>
         </html>
       );

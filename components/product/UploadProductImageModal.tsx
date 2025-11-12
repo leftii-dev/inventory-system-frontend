@@ -218,12 +218,6 @@ export default function UploadProductImageModal({ productId, productImageUrl, pr
                                         error={state.errors?.imageUrl}
                                     />
                                     <FormInput
-                                        label="Display Order (0 first)"
-                                        type="text"
-                                        name="displayOrder"
-                                        error={state.errors?.displayOrder}
-                                    />
-                                    <FormInput
                                         label="Make default?"
                                         type="checkbox"
                                         defaultChecked={false}
@@ -248,6 +242,7 @@ export default function UploadProductImageModal({ productId, productImageUrl, pr
                                     <input type="hidden" name="productId" value={productId}/>
                                     <input type="hidden" name="originalUrl" value={productImageUrl ?? ''}/>
                                     <input type="hidden" name="productImageId" value={productImageId ?? ''}/>
+                                    <input type="hidden" name="displayOrder" value={0} />
                                 </div>
                             )}
                         </FormCard>

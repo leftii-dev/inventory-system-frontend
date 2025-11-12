@@ -6,6 +6,7 @@ import ProductCell from "@/components/product/product-table/ProductCell";
 import {useRouter} from "next/navigation";
 import {useState} from "react";
 import {createPortal} from "react-dom";
+import AboveBelowEqualsSearch from "@/components/AboveBelowEqualSearch";
 
 
 export default function ProductLine({product}: {product: ProductResponse}) {
@@ -27,6 +28,9 @@ export default function ProductLine({product}: {product: ProductResponse}) {
                     <ProductCell>{product.description}</ProductCell>
                     <ProductCell>{product.productCode}</ProductCell>
                     <ProductCell>{product.categoryName}</ProductCell>
+                    {'cost' in product && (
+                        <ProductCell>{product.cost}</ProductCell>
+                    )}
                     <ProductCell>${product.price}</ProductCell>
                     <ProductCell>{product.discountName}</ProductCell>
 

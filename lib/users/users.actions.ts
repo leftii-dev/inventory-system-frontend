@@ -2,7 +2,7 @@
 
 import {ActionResult, apiAction} from "@/lib/utils/api.actions";
 import {SelfUpdateUserSchema} from "@/lib/users/users.schemas";
-import {getSession} from "@/app/api/auth/[...nextauth]/route";
+import {getSession} from "@/lib/auth/session";
 import {UserResponse} from "@/lib/users/users.types";
 
 export async function getCurrentUserAction(): Promise<ActionResult<UserResponse>> {
@@ -19,14 +19,14 @@ export async function updateSelfAction(
     formData: FormData
 ): Promise<ActionResult<UserResponse>> {
     const session = await getSession();
-    if (!session?.user?.id) {
+    if (!session?.id) {
         throw new Error("Unauthorized");
     }
 
 
     return apiAction({
         schema: SelfUpdateUserSchema,
-        endpoint: `/users/${session.user.id}`,
+        endpoint: `/users/${session.id}`,
         method: 'PUT',
         requireAuth: true,
     }, formData)
