@@ -16,8 +16,6 @@ export async function registerUserAction(formData: FormData): Promise<ActionResu
 }
 
 export async function activateUserAction(token: string): Promise<ActionResult> {
-    console.log(token)
-    console.log(encodeURIComponent(token));
     return apiAction({
         endpoint: '/auth/activate/' + encodeURIComponent(token),
         method: 'POST',

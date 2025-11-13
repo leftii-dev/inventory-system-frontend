@@ -40,6 +40,7 @@ interface ProductImageBasic {
     isDefault: boolean;
     altText: string;
     imageType: string;
+    blurDataUrl: string;
 }
 
 interface ProductImageDetail extends ProductImageBasic {

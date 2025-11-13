@@ -37,6 +37,8 @@ export default function ProductTableMobile(
                                     src={defaultImage?.imageUrl ?? '/images/product-placeholder.svg'}
                                     alt={defaultImage?.altText ?? 'Default Image'}
                                     fill
+                                    placeholder={defaultImage?.blurDataUrl ? "blur" : undefined}
+                                    blurDataURL={defaultImage?.blurDataUrl ? defaultImage.blurDataUrl : undefined}
                                     className={'object-contain'}
                                 />
                             </div>

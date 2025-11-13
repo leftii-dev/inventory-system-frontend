@@ -1,13 +1,10 @@
+import { ImageLoaderProps } from "next/image";
+
 export const imageLoader = (
     {
         src,
         width,
         quality
-    }:
-    {
-        src: string,
-        width: number,
-        quality?: number
-    }) => {
-    return `${src}?w=${width}${quality ? `&q=${quality}` : ''}`;
+    }:ImageLoaderProps) => {
+    return `${src}?w=${width}${quality ? `&q=${quality}` : '&q=75'}`;
 }

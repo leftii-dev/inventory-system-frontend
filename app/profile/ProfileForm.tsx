@@ -17,7 +17,7 @@ export default function ProfileForm({
 }) {
 
     return (
-        <FormCard<ActionResult<UserResponse>>
+        <FormCard<UserResponse>
             action={updateSelfAction}
             initialState={{
                 ok: true,

@@ -4,7 +4,7 @@
 import useSWR from 'swr';
 import {UserResponse} from "@/lib/users/users.types";
 
-const fetcher = (url: string) => fetch(url).then(r => r.json());
+const fetcher = (url: string) => fetch(url, {credentials: "include"}).then(r => r.json());
 
 interface SessionData {
     user: UserResponse | null;

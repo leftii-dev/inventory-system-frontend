@@ -13,6 +13,7 @@ import { ProductImageRequestSchema } from "@/lib/products/product.schemas";
 import { emptyApiResponse } from "@/lib/types/validation.types";
 import { join } from 'path'
 import {unlink} from "node:fs/promises";
+import sharp from "sharp";
 
 export async function getProducts(
     searchParams?: Record<string, string | string[] | undefined>
@@ -66,7 +67,6 @@ export async function addProductImage(
         formData.delete("productId");
         formData.delete("originalUrl");
         formData.delete("productImageId");
-
         if (!productId) {
             return {
                 ok: false,
@@ -77,14 +77,14 @@ export async function addProductImage(
 
         let imageUrl: string | undefined;
         if (file && file.size > 0) {
-            const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+            const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp"];
             const MAX_SIZE = 5 * 1024 * 1024;
 
             if (!ACCEPTED_TYPES.includes(file.type)) {
                 return {
                     ok: false,
                     response: emptyApiResponse<ProductImage>(),
-                    errors: { imageUrl: "File must be a JPEG, PNG, WebP, or GIF image" },
+                    errors: { imageUrl: "File must be a JPEG, PNG, or WebP image" },
                 };
             }
 
@@ -116,7 +116,38 @@ export async function addProductImage(
             imageUrl = uploadData.data.imageUrl;
             if(imageUrl){
                 formData.set('imageUrl', imageUrl);
+
+                const imageBuffer = Buffer.from(await file.arrayBuffer());
+
+                const ext = file.type.split('/')[1] || 'jpeg';
+                let blurBuffer: Buffer;
+
+                if(ext === 'png') {
+                    blurBuffer = await sharp(imageBuffer)
+                        .resize(10, null, { fit: 'inside' })
+                        .blur()
+                        .png({ compressionLevel: 6 })
+                        .toBuffer();
+                } else if(ext === 'webp') {
+                    blurBuffer = await sharp(imageBuffer)
+                        .resize(10, null, { fit: 'inside' })
+                        .blur()
+                        .webp({ quality: 50 })
+                        .toBuffer();
+                } else {
+                    blurBuffer = await sharp(imageBuffer)
+                        .resize(10, null, { fit: 'inside' })
+                        .blur()
+                        .jpeg({ quality: 50 })
+                        .toBuffer();
+                }
+
+                const blurBase64 = `data:${file.type};base64,${blurBuffer.toString('base64')}`;
+                formData.set('blurDataUrl', blurBase64);
+
             }
+
+
 
             let response;
             if (originalUrl && productImageId) {
