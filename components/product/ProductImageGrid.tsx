@@ -22,13 +22,13 @@ export default function ProductImageGrid({ images, productId }: Props) {
                     src={defaultImage?.imageUrl ?? '/images/product-placeholder.svg'}
                     alt={defaultImage?.altText ?? 'Placeholder'}
                     fill
+                    blurDataURL={defaultImage?.blurDataUrl ? defaultImage.blurDataUrl : undefined}
+                    placeholder={defaultImage?.blurDataUrl ? 'blur' : undefined}
                     className="object-contain p-2"
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 />
                 <UploadProductImageModal
                     productId={productId}
-                    productImageUrl={defaultImage?.imageUrl ?? '/images/product-placeholder.svg'}
-                    productImageId={defaultImage?.id ?? ''}
+                    image={defaultImage}
                 />
             </div>
 
@@ -44,13 +44,13 @@ export default function ProductImageGrid({ images, productId }: Props) {
                                     src={img.imageUrl}
                                     alt={img.altText}
                                     fill
+                                    blurDataURL={img.blurDataUrl ? defaultImage.blurDataUrl : undefined}
+                                    placeholder={img.blurDataUrl ? 'blur' : undefined}
                                     className="object-contain p-1"
-                                    sizes="6rem"
                                 />
                                 <UploadProductImageModal
                                     productId={productId}
-                                    productImageUrl={img.imageUrl ?? '/images/product-placeholder.svg'}
-                                    productImageId={img.id ?? ''}
+                                    image={img}
                                 />
                             </div>
                         ))}

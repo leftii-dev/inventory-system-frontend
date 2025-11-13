@@ -14,11 +14,10 @@ import {useRouter} from "next/navigation";
 
 interface Props {
     productId: string;
-    productImageUrl?: string;
-    productImageId?: string;
+    image?: ProductImage;
 }
 
-export default function UploadProductImageModal({ productId, productImageUrl, productImageId }: Props) {
+export default function UploadProductImageModal({ productId, image }: Props) {
     const [isOpen, setIsOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
     const router = useRouter();
@@ -43,11 +42,13 @@ export default function UploadProductImageModal({ productId, productImageUrl, pr
         <div className="relative group w-full h-full">
             {/* Product image */}
 
-            {productImageUrl && (
+            {image && (
                 <Image
                     loader={imageLoader}
-                    src={productImageUrl}
-                    alt="Product"
+                    src={image.imageUrl}
+                    alt={image.altText}
+                    blurDataURL={image.blurDataUrl ? image.blurDataUrl : undefined}
+                    placeholder={image.blurDataUrl ? 'blur' : undefined}
                     className="rounded-xl w-full h-full object-contain"
                     fill
                 />
@@ -74,7 +75,7 @@ export default function UploadProductImageModal({ productId, productImageUrl, pr
                     >
                         <PenSquare className="h-8 w-8 text-white"/>
                     </button>
-                    {productImageId && (
+                    {image?.id && (
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
@@ -115,14 +116,15 @@ export default function UploadProductImageModal({ productId, productImageUrl, pr
 
                         <div
                             className="relative mx-auto w-24 aspect-square border border-brand-primary rounded-lg flex-shrink-0 overflow-hidden bg-white">
-                            {productImageUrl && (
+                            {image && (
                                 <Image
                                     loader={imageLoader}
-                                    src={productImageUrl}
-                                    alt={'Current picture'}
+                                    src={image.imageUrl}
+                                    alt={image.altText}
                                     fill
+                                    blurDataURL={image.blurDataUrl ? image.blurDataUrl : undefined}
+                                    placeholder={image.blurDataUrl ? 'blur' : undefined}
                                     className="object-contain p-1"
-                                    sizes="6rem"
                                 />
                             )}
                         </div>
@@ -152,7 +154,7 @@ export default function UploadProductImageModal({ productId, productImageUrl, pr
                                         Cancel
                                     </button>
                                     <input type={'hidden'} name={'productId'} value={productId}/>
-                                    <input type={'hidden'} name={'productImageId'} value={productImageId}/>
+                                    <input type={'hidden'} name={'productImageId'} value={image?.id}/>
                                 </div>
                             )}
 
@@ -183,14 +185,15 @@ export default function UploadProductImageModal({ productId, productImageUrl, pr
 
                         <div
                             className="relative mx-auto w-24 aspect-square border border-brand-primary rounded-lg flex-shrink-0 overflow-hidden bg-white">
-                            {productImageUrl && (
+                            {image && (
                                 <Image
                                     loader={imageLoader}
-                                    src={productImageUrl}
-                                    alt={'Current picture'}
+                                    src={image.imageUrl}
+                                    alt={image.altText}
                                     fill
+                                    blurDataURL={image.blurDataUrl ? image.blurDataUrl : undefined}
+                                    placeholder={image.blurDataUrl ? 'blur' : undefined}
                                     className="object-contain p-1"
-                                    sizes="6rem"
                                 />
                             )}
                         </div>
@@ -240,8 +243,8 @@ export default function UploadProductImageModal({ productId, productImageUrl, pr
 
                                     {/* Hidden fields */}
                                     <input type="hidden" name="productId" value={productId}/>
-                                    <input type="hidden" name="originalUrl" value={productImageUrl ?? ''}/>
-                                    <input type="hidden" name="productImageId" value={productImageId ?? ''}/>
+                                    <input type="hidden" name="originalUrl" value={image?.imageUrl ?? ''}/>
+                                    <input type="hidden" name="productImageId" value={image?.id ?? ''}/>
                                     <input type="hidden" name="displayOrder" value={0} />
                                 </div>
                             )}

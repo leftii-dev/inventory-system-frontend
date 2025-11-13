@@ -7,6 +7,7 @@ import {useRouter} from "next/navigation";
 import {useState} from "react";
 import {createPortal} from "react-dom";
 import AboveBelowEqualsSearch from "@/components/AboveBelowEqualSearch";
+import {imageLoader} from "@/lib/utils/util.image";
 
 
 export default function ProductLine({product}: {product: ProductResponse}) {
@@ -40,7 +41,9 @@ export default function ProductLine({product}: {product: ProductResponse}) {
                             src={defaultImage?.imageUrl ?? `/images/product-placeholder.svg`}
                             alt={defaultImage?.altText ?? `Placeholder for missing product image`}
                             fill
-                            unoptimized
+                            placeholder={defaultImage?.blurDataUrl ? "blur" : undefined}
+                            blurDataURL={defaultImage?.blurDataUrl ? defaultImage.blurDataUrl : undefined}
+                            loader={imageLoader}
                             className={`object-contain hover:scale-95`}
                             onClick={(e) => {
                                 e.stopPropagation();
@@ -59,8 +62,10 @@ export default function ProductLine({product}: {product: ProductResponse}) {
                         <Image
                             src={defaultImage?.imageUrl ?? '/images/product-placeholder.svg'}
                             alt={defaultImage?.altText ?? 'Placeholder'}
-                            width={500}
-                            height={500}
+                            fill
+                            placeholder={defaultImage?.blurDataUrl ? "blur" : undefined}
+                            blurDataURL={defaultImage?.blurDataUrl ? defaultImage.blurDataUrl : undefined}
+                            loader={imageLoader}
                             className="object-contain"
                         />
                     </div>,

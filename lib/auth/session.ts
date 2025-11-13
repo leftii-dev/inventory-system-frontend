@@ -19,7 +19,8 @@ export async function getSession():Promise<UserResponse | null> {
         });
 
         if (res.ok) {
-            return await res.json();
+            const json = await res.json();
+            return json.data as UserResponse;
         }
     } catch (error) {
         console.error('Session check failed:', error);

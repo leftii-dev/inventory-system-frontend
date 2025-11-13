@@ -13,7 +13,7 @@ export default function NavLinks() {
         { href: "/", label: "Home" },
         { href: "/about", label: "About" },
         { href: "/contact", label: "Contact" },
-        ...(user ? [
+        ...(user?.roles?.some(role => ['ADMIN', 'EMPLOYEE', 'MANAGER'].includes(role)) ? [
             { href: "/profile", label: "My Profile" },
             { href: "/dashboard", label: "Dashboard" }
         ] : []),

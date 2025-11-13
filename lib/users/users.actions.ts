@@ -24,7 +24,7 @@ export async function updateSelfAction(
     }
 
 
-    return apiAction({
+    return apiAction<UserResponse>({
         schema: SelfUpdateUserSchema,
         endpoint: `/users/${session.id}`,
         method: 'PUT',
