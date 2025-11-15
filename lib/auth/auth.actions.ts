@@ -50,7 +50,7 @@ export async function loginAction(
                 httpOnly: true,
                 secure: false, // TODO: prod: true
                 sameSite: 'lax',
-                domain: 'localhost', // TODO: prod: .yourdomain.com
+                // domain: 'localhost', // TODO: prod: .yourdomain.com
             });
         }
     }

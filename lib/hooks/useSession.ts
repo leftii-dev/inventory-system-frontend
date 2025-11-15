@@ -18,9 +18,11 @@ export function useSession() {
         dedupingInterval: 2000, // Prevent duplicate requests within 2s
     });
 
+    console.log("useSession data:", data);
+
     return {
         user: data?.user ?? null,
-        isLoading,
+        isLoading: isLoading || data === undefined,
         isError: !!error,
         mutate, // Call this to manually refresh the session
     };

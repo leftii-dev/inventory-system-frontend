@@ -6,14 +6,15 @@ import { usePathname } from "next/navigation";
 import { useSession } from "@/lib/hooks/useSession";
 
 export default function NavLinks() {
-    const { user } = useSession();
+    const { user, isLoading } = useSession();
     const currentPath = usePathname();
-
+    console.log(isLoading)
+    console.log(user)
     const links = [
         { href: "/", label: "Home" },
         { href: "/about", label: "About" },
         { href: "/contact", label: "Contact" },
-        ...(user?.roles?.some(role => ['ADMIN', 'EMPLOYEE', 'MANAGER'].includes(role)) ? [
+        ...(!isLoading && user?.roles?.some(role => ['ADMIN', 'EMPLOYEE', 'MANAGER'].includes(role)) ? [
             { href: "/profile", label: "My Profile" },
             { href: "/dashboard", label: "Dashboard" }
         ] : []),
