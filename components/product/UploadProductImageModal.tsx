@@ -1,13 +1,13 @@
 'use client'
 
 import {useState} from "react";
-import {PenSquare, Trash2, X} from "lucide-react";
+import {PenSquare, Trash2, X, Star} from "lucide-react";
 import { ProductImage } from "@/lib/products/product.types";
 import FormCard from "@/components/form/FormCard";
 import { emptyApiResponse } from "@/lib/types/validation.types";
 import FormInput from "@/components/form/FormInput";
 import SubmitButton from "@/components/SubmitButton";
-import {addProductImage, deleteProductImage} from "@/lib/products/product.actions";
+import {addProductImage, deleteProductImage, setDefaultImage} from "@/lib/products/product.actions";
 import Image from 'next/image'
 import {imageLoader} from "@/lib/utils/util.image";
 import {useRouter} from "next/navigation";
@@ -20,13 +20,16 @@ interface Props {
 export default function UploadProductImageModal({ productId, image }: Props) {
     const [isOpen, setIsOpen] = useState(false);
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+    const [isDefaultOpen, setIsDefaultOpen] = useState(false);
     const router = useRouter();
 
     const openModal = () => setIsOpen(true);
     const openDeleteModal = () => setIsDeleteOpen(true);
+    const openDefaultModal = () => setIsDefaultOpen(true);
     const closeModals = () => {
         setIsOpen(false);
         setIsDeleteOpen(false);
+        setIsDefaultOpen(false);
     }
 
     const handleSuccess = () => {
@@ -54,18 +57,33 @@ export default function UploadProductImageModal({ productId, image }: Props) {
                 />
             )}
 
-                {/* Hover overlay icon */}
-                <div
+            {/* Hover overlay icons */}
+            <div
+                className="
+                    absolute left-1/2 bottom-[20%] -translate-x-1/2
+                    flex items-center justify-center gap-2
+                    opacity-0 group-hover:opacity-100 transition-opacity duration-200
+                "
+            >
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        openModal();
+                    }}
                     className="
-                        absolute left-1/2 bottom-[20%] -translate-x-1/2
-                        flex items-center justify-center
-                        opacity-0 group-hover:opacity-100 transition-opacity duration-200
+                        bg-black/60 p-3 rounded-xl shadow-lg
+                        hover:bg-black/80 transition-colors
                     "
+                    type="button"
                 >
-                    <button  // ✅ Use button instead of div for better semantics
+                    <PenSquare className="h-8 w-8 text-white"/>
+                </button>
+
+                {image?.id && !image?.isDefault && (
+                    <button
                         onClick={(e) => {
-                            e.stopPropagation();  // ✅ Critical: stop bubbling
-                            openModal();
+                            e.stopPropagation();
+                            openDefaultModal();
                         }}
                         className="
                             bg-black/60 p-3 rounded-xl shadow-lg
@@ -73,26 +91,95 @@ export default function UploadProductImageModal({ productId, image }: Props) {
                         "
                         type="button"
                     >
-                        <PenSquare className="h-8 w-8 text-white"/>
+                        <Star className="h-8 w-8 text-white"/>
                     </button>
-                    {image?.id && (
+                )}
+
+                {image?.id && (
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            openDeleteModal();
+                        }}
+                        className="
+                            bg-black/60 p-3 rounded-xl shadow-lg
+                            hover:bg-black/80 transition-colors
+                        "
+                        type="button"
+                    >
+                        <Trash2 className='h-8 w-8 text-white'/>
+                    </button>
+                )}
+            </div>
+
+            {/* Set Default Modal overlay */}
+            {isDefaultOpen && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+                    onClick={closeModals}
+                >
+                    <div
+                        className="relative w-full max-w-md bg-white rounded-2xl shadow-xl p-6 border border-gray-200"
+                        onClick={(e) => e.stopPropagation()}
+                    >
                         <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                openDeleteModal();
-                            }}
-                            className="
-                                bg-black/60 p-3 rounded-xl shadow-lg
-                                hover:bg-black/80 transition-colors
-                            "
+                            onClick={closeModals}
+                            className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
                             type="button"
                         >
-                            <Trash2 className='h-8 w-8 text-white'/>
+                            <X className="h-5 w-5"/>
                         </button>
-                    )}
+
+                        <div className="relative mx-auto w-24 aspect-square border border-brand-primary rounded-lg flex-shrink-0 overflow-hidden bg-white">
+                            {image && (
+                                <Image
+                                    loader={imageLoader}
+                                    src={image.imageUrl}
+                                    alt={image.altText}
+                                    fill
+                                    blurDataURL={image.blurDataUrl ? image.blurDataUrl : undefined}
+                                    placeholder={image.blurDataUrl ? 'blur' : undefined}
+                                    className="object-contain p-1"
+                                />
+                            )}
+                        </div>
+
+                        <h2 className="text-lg font-semibold text-center my-4">
+                            Set as Default Image?
+                        </h2>
+
+                        <FormCard<unknown>
+                            action={setDefaultImage}
+                            initialState={{
+                                ok: true,
+                                response: emptyApiResponse<unknown>(),
+                                errors: {},
+                            }}
+                            onSuccess={handleSuccess}
+                        >
+                            {(state) => (
+                                <div className={'flex justify-between gap-2'}>
+                                    <SubmitButton>
+                                        <p>Set as Default</p>
+                                    </SubmitButton>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            closeModals();
+                                        }}
+                                        type={'button'}
+                                        className={'transition-colors ease-in-out duration-200 hover:cursor-pointer hover:bg-brand-secondary rounded-lg py-1 px-2'}
+                                    >
+                                        Cancel
+                                    </button>
+                                    <input type={'hidden'} name={'productId'} value={productId}/>
+                                    <input type={'hidden'} name={'imageId'} value={image?.id}/>
+                                </div>
+                            )}
+                        </FormCard>
+                    </div>
                 </div>
-
-
+            )}
 
             {/* Delete Image Modal overlay */}
             {isDeleteOpen && (
@@ -100,14 +187,12 @@ export default function UploadProductImageModal({ productId, image }: Props) {
                     className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
                     onClick={closeModals}
                 >
-                    {/* Modal content */}
                     <div
                         className="relative w-full max-w-md bg-white rounded-2xl shadow-xl p-6 border border-gray-200"
-                        onClick={(e) => e.stopPropagation()}  // ✅ Don't close when clicking inside
+                        onClick={(e) => e.stopPropagation()}
                     >
-                        {/* Close button */}
                         <button
-                            onClick={closeModals}  // ✅ No need for stopPropagation here
+                            onClick={closeModals}
                             className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
                             type="button"
                         >
@@ -157,7 +242,6 @@ export default function UploadProductImageModal({ productId, image }: Props) {
                                     <input type={'hidden'} name={'productImageId'} value={image?.id}/>
                                 </div>
                             )}
-
                         </FormCard>
                     </div>
                 </div>
@@ -169,14 +253,12 @@ export default function UploadProductImageModal({ productId, image }: Props) {
                     className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
                     onClick={closeModals}
                 >
-                    {/* Modal content */}
                     <div
                         className="relative w-full max-w-md bg-white rounded-2xl shadow-xl p-6 border border-gray-200"
-                        onClick={(e) => e.stopPropagation()}  // ✅ Don't close when clicking inside
+                        onClick={(e) => e.stopPropagation()}
                     >
-                        {/* Close button */}
                         <button
-                            onClick={closeModals}  // ✅ No need for stopPropagation here
+                            onClick={closeModals}
                             className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
                             type="button"
                         >
@@ -198,7 +280,6 @@ export default function UploadProductImageModal({ productId, image }: Props) {
                             )}
                         </div>
 
-                        {/* FormCard content */}
                         <FormCard<ProductImage>
                             action={addProductImage}
                             initialState={{
@@ -241,7 +322,6 @@ export default function UploadProductImageModal({ productId, image }: Props) {
                                     />
                                     <SubmitButton>Upload</SubmitButton>
 
-                                    {/* Hidden fields */}
                                     <input type="hidden" name="productId" value={productId}/>
                                     <input type="hidden" name="originalUrl" value={image?.imageUrl ?? ''}/>
                                     <input type="hidden" name="productImageId" value={image?.id ?? ''}/>

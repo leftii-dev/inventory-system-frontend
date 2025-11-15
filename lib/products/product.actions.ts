@@ -9,7 +9,7 @@ import {
 } from "@/lib/products/product.types";
 import { ActionResult, apiAction } from "@/lib/utils/api.actions";
 import { toQueryString } from "@/lib/utils/util.params";
-import { ProductImageRequestSchema } from "@/lib/products/product.schemas";
+import {ProductImageRequestSchema, ProductRequestSchema} from "@/lib/products/product.schemas";
 import { emptyApiResponse } from "@/lib/types/validation.types";
 import { join } from 'path'
 import {unlink} from "node:fs/promises";
@@ -217,3 +217,26 @@ export async function deleteProductImage(
     }, formData);
 }
 
+export async function updateProduct(
+    prevState: ActionResult<ProductResponse>,
+    formData: FormData
+): Promise<ActionResult<ProductResponse>> {
+    return await apiAction<ProductResponse>({
+        schema: ProductRequestSchema,
+        endpoint: `/products/${formData.get("id")}`,
+        method: 'PUT',
+        booleanFields: ["isActive"],
+        requireAuth: true
+    }, formData);
+}
+
+export async function setDefaultImage(
+    prevState: ActionResult<unknown>,
+    formData: FormData
+): Promise<ActionResult<unknown>> {
+    return await apiAction<ProductResponse>({
+        endpoint: `/products/${formData.get('productId')}/images/${formData.get('imageId')}/default`,
+        method: 'PATCH',
+        requireAuth: true
+    }, formData);
+}
