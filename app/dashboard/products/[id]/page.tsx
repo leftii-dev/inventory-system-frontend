@@ -57,7 +57,7 @@ export default async function DashboardProductDetailPage({params}: {params: {id:
                     isNew={isNew}
                     initialProduct={formInitialData}
                     categories={categories.response?.data || []}
-                    brands={brands.response?.data || []}
+                    initialBrands={brands.response?.data || []}
                     discounts={discounts.response?.data || []}
                 />
             </div>

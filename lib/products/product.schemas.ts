@@ -26,3 +26,8 @@ export const ProductRequestSchema = z.object({
     brandID: z.uuid({message: 'Invalid Brand ID'}).nullable().optional(),
     discountID: z.uuid({message: 'Invalid Discount ID'}).nullable().optional(),
 })
+
+export const BrandRequestSchema = z.object({
+    name: z.string().min(1, {error: 'Name is required'}).max(50, {error: 'Name must be 50 characters or less'}),
+    description: z.string().max(3000, {error: 'Description must be 3000 characters or less'}).optional(),
+})

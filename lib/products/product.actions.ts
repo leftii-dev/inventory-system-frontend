@@ -7,11 +7,11 @@ import {
     ProductImageResponse,
     ProductResponse
 } from "@/lib/products/product.types";
-import { ActionResult, apiAction } from "@/lib/utils/api.actions";
-import { toQueryString } from "@/lib/utils/util.params";
-import {ProductImageRequestSchema, ProductRequestSchema} from "@/lib/products/product.schemas";
-import { emptyApiResponse } from "@/lib/types/validation.types";
-import { join } from 'path'
+import {ActionResult, apiAction} from "@/lib/utils/api.actions";
+import {toQueryString} from "@/lib/utils/util.params";
+import {BrandRequestSchema, ProductImageRequestSchema, ProductRequestSchema} from "@/lib/products/product.schemas";
+import {emptyApiResponse} from "@/lib/types/validation.types";
+import {join} from 'path'
 import {unlink} from "node:fs/promises";
 import sharp from "sharp";
 
@@ -19,10 +19,9 @@ export async function getProducts(
     searchParams?: Record<string, string | string[] | undefined>
 ): Promise<ActionResult<ProductResponse[]>> {
     const endpoint = `/products${searchParams ? toQueryString(searchParams) : ''}`
-    const res = await apiAction<ProductResponse[]>({
+    return await apiAction<ProductResponse[]>({
         endpoint: endpoint,
     });
-    return res;
 }
 
 export async function getProduct(
@@ -252,6 +251,18 @@ export async function setDefaultImage(
     return await apiAction<ProductResponse>({
         endpoint: `/products/${formData.get('productId')}/images/${formData.get('imageId')}/default`,
         method: 'PATCH',
+        requireAuth: true,
+    }, formData);
+}
+
+export async function createBrand(
+    prevState: ActionResult<BrandResponse>,
+    formData: FormData
+): Promise<ActionResult<BrandResponse>> {
+    return await apiAction<BrandResponse>({
+        endpoint: `/brands`,
+        schema: BrandRequestSchema,
+        method: 'POST',
         requireAuth: true,
     }, formData);
 }
