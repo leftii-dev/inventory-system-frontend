@@ -1,17 +1,65 @@
-import {getProduct} from "@/lib/products/product.actions";
+import {getBrands, getCategories, getDiscounts, getProduct} from "@/lib/products/product.actions";
 import ProductImageGrid from "@/components/product/ProductImageGrid";
+import ProductEditForm from "@/app/dashboard/products/[id]/ProductEditForm";
+import {emptyApiResponse} from "@/lib/types/validation.types";
+import {ProductResponse} from "@/lib/products/product.types";
 
 export default async function DashboardProductDetailPage({params}: {params: {id: string}}) {
     const { id } = await params
-    const res = await getProduct(id);
+    const isNew = id === 'new';
 
-    if(!res.ok) return null;
+    const [categories, brands, discounts, productResponse] = await Promise.all([
+        getCategories(),
+        getBrands(),
+        getDiscounts(),
+        isNew ? Promise.resolve(null) : getProduct(id)
+    ]);
 
-    const product = res.response.data
+    if(!isNew && (!productResponse || !productResponse.ok)){
+        return <div>Product not found</div>
+    }
+
+    const newProduct: ProductResponse  = {
+        id: '',
+        sku: '',
+        productCode: '',
+        name: '',
+        description: '',
+        cost: 0,
+        price: 0,
+        weight: 0,
+        dimensions: {},
+        additionalDetails: {},
+        categoryID: '',
+        categoryName: '',
+        images: [],
+        brandID: '',
+        brandName: '',
+        discountID: '',
+        discountName: '',
+    }
+
+    const formInitialData = isNew
+        ? emptyApiResponse<ProductResponse>(newProduct)
+        : productResponse!.response;
+
+    const product = !isNew ? productResponse!.response.data : null;
     return (
         <div className={`flex flex-row grow w-full border border-gray-300 rounded-lg shadow-lg`}>
-            <div className={`flex flex-col w-1/4 mr-auto p-4`}>
-                <ProductImageGrid images={product.images} productId={product.id}/>
+            {!isNew && (
+                <div className={`flex flex-col w-1/4 p-4 border-r border-gray-300`}>
+                    <ProductImageGrid images={product ? product.images : []} productId={product ? product.id : ''}/>
+                </div>
+                )
+            }
+            <div className={`flex flex-col flex-1 p-4`}>
+                <ProductEditForm
+                    isNew={isNew}
+                    initialProduct={formInitialData}
+                    categories={categories.response?.data || []}
+                    brands={brands.response?.data || []}
+                    discounts={discounts.response?.data || []}
+                />
             </div>
         </div>
     )

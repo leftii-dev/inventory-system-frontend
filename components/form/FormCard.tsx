@@ -12,6 +12,8 @@ type FormCardProps<T> = {
     children: (state: ActionResult<T>) => ReactNode;
     confirmMessage?: string;
     onSuccess?: (payload: T) => void;
+    onChange?: (e: React.FormEvent<HTMLFormElement>) => void;
+    onInput?: (e: React.FormEvent<HTMLFormElement>) => void;
 };
 
 export default function FormCard<T>({
@@ -20,6 +22,8 @@ export default function FormCard<T>({
                                         children,
                                         confirmMessage,
                                         onSuccess,
+                                        onChange,
+                                        onInput
                                     }: FormCardProps<T>) {
     const [hasSubmitted, setHasSubmitted] = useState(false);
     const router = useRouter();
@@ -64,7 +68,9 @@ export default function FormCard<T>({
     return (
         <form
             action={handleSubmit}
-            className="w-full max-w-lg bg-white p-8 rounded-lg shadow-md border border-gray-300"
+            onChange={onChange}
+            onInput={onInput}
+            className="w-full max-w-full bg-white p-8 rounded-lg shadow-md border border-gray-300"
         >
             {hasSubmitted && 'ok' in state && (
                 <div

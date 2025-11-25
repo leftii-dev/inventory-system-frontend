@@ -30,8 +30,6 @@ export default async function DashboardProductsPage({
         Object.entries(filters).filter(([_, v]) => v !== undefined && v !== '')
     );
 
-    console.log("filters:", filters);
-    console.log("cleanedFilters:", cleanedFilters);
 
     const [products, categories, brands, discounts] = await Promise.all([
         getProducts(cleanedFilters),

@@ -2,30 +2,32 @@
 
 import React, { InputHTMLAttributes } from "react";
 
-type FormInputProps = InputHTMLAttributes<HTMLInputElement> & {
+type FormTextAreaProps = InputHTMLAttributes<HTMLTextAreaElement> & {
     name: string,
     label: string,
-    error?:string
+    error?: string
 };
 
-export default function FormInput({
-    name,
-    label,
-    error,
-    ...rest
-}: FormInputProps) {
-    return(
+export default function FormTextArea(
+    {
+        name,
+        label,
+        error,
+        ...rest
+    }: FormTextAreaProps)
+{
+    return (
         <div>
             <label htmlFor={name} className={`block mb-1 font-medium font-inter`}>
                 {label}
             </label>
-            <input
+            <textarea
                 id={name}
                 name={name}
                 {...rest}
-                className={`w-full border rounded px-3 py-2 focus:outline-none focus:ring ${
-                        error ? 'border-red-500' : 'border-gray-300'}
-                    `}
+                className={`w-full border rounded px-3 py-2 h-48 focus:outline-none focus:ring ${
+                    error ? 'border-red-500' : 'border-gray-300'}
+                `}
             />
             {error && (
                 <p className={`text-red-600 text-sm mt-1`}>{error}</p>

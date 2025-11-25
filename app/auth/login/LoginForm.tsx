@@ -36,7 +36,7 @@ export default function LoginForm({
                     state.errors = { ...state.errors, general: 'Invalid email or password' };
                 }
 
-                // Extract the effect logic into a separate component
+
                 const LoginEffects = () => {
                     useEffect(() => {
                         if (state.ok && state.response?.data?.email && !hasRedirected.current) {

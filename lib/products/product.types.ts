@@ -14,7 +14,7 @@ interface ProductBasic {
     additionalDetails: Record<string, unknown>;
     categoryID: string;
     categoryName: string;
-    images: ProductImage[];
+    images: ProductImageResponse[];
     brandID: string;
     brandName: string;
     discountID: string;
@@ -30,7 +30,7 @@ interface ProductDetail extends ProductBasic {
     active: boolean;
 }
 
-export type ProductImage = ProductImageBasic | ProductImageDetail;
+export type ProductImageResponse = ProductImageBasic | ProductImageDetail;
 
 interface ProductImageBasic {
     id: string;

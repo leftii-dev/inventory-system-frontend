@@ -4,19 +4,41 @@ import type {ValidationResult} from '@/lib/types/validation.types';
 export function formDataToTypedObject<T>(
     formData: FormData,
     numberFields: string[] = [],
-    booleanFields: string[] = []
+    booleanFields: string[] = [],
+    jsonFields: string[] = [],
+    nullableFields: string[] = []
 ): T {
     const obj: Record<string, unknown> = {};
 
     for (const [key, value] of formData.entries()) {
         const val = value instanceof File ? undefined : value;
 
+        if (nullableFields.includes(key) && (val === "" || val === "null")) {
+            obj[key] = null;
+            continue;
+        }
+
         if (numberFields.includes(key)) {
             obj[key] = val !== "" ? Number(val) : undefined;
-        } else if (booleanFields.includes(key)) {
+        }
+        else if (booleanFields.includes(key)) {
             obj[key] = val === "on" || val === 'true';
-        } else {
-            obj[key] = val; // string or undefined
+        }
+        // 2. Add JSON parsing logic
+        else if (jsonFields.includes(key)) {
+            if (typeof val === 'string' && val.trim() !== '') {
+                try {
+                    obj[key] = JSON.parse(val);
+                } catch (e) {
+                    console.error(`Error parsing JSON for field ${key}:`, e);
+                    obj[key] = {}; // Default to empty object on failure to prevent Zod crash
+                }
+            } else {
+                obj[key] = {}; // Handle empty strings or undefined
+            }
+        }
+        else {
+            obj[key] = val;
         }
     }
 
@@ -29,8 +51,6 @@ export function validateSchema<T extends z.ZodTypeAny>(
     data: unknown
 ): ValidationResult<T> {
     const result = schema.safeParse(data);
-
-    console.log(result)
 
     if (!result.success) {
         const errors = z.treeifyError(result.error);

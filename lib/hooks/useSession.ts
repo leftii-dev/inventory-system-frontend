@@ -20,7 +20,7 @@ export function useSession() {
 
     return {
         user: data?.user ?? null,
-        isLoading,
+        isLoading: isLoading || data === undefined,
         isError: !!error,
         mutate, // Call this to manually refresh the session
     };

@@ -17,7 +17,6 @@ export default async function ActivatePage({params}: ActivatePageProps) {
         message = 'Activation token is required.';
     } else {
         try {
-            console.log(token)
             const result: ActionResult = await activateUserAction(token);
 
             if (result.ok) {
