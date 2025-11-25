@@ -4,7 +4,7 @@ import {
     BrandResponse,
     CategoryResponse,
     DiscountResponse,
-    ProductImage,
+    ProductImageResponse,
     ProductResponse
 } from "@/lib/products/product.types";
 import { ActionResult, apiAction } from "@/lib/utils/api.actions";
@@ -22,8 +22,6 @@ export async function getProducts(
     const res = await apiAction<ProductResponse[]>({
         endpoint: endpoint,
     });
-    console.log(endpoint)
-    console.log(res.response);
     return res;
 }
 
@@ -53,11 +51,26 @@ export async function getDiscounts(): Promise<ActionResult<DiscountResponse[]>> 
     })
 }
 
+export async function createProduct(
+    prevState: ActionResult<ProductResponse>,
+    formData: FormData
+): Promise<ActionResult<ProductResponse>> {
+    return await apiAction<ProductResponse>({
+        schema: ProductRequestSchema,
+        endpoint: `/products`,
+        method: 'POST',
+        booleanFields: ["isActive"],
+        numberFields: ["price", "cost", "weight"],
+        jsonFields: ["dimensions", "additionalDetails"],
+        nullableFields: ["brandID", "discountID", "categoryID"],
+        requireAuth: true
+    }, formData);
+}
 
 export async function addProductImage(
-    prevState: ActionResult<ProductImage>,
+    prevState: ActionResult<ProductImageResponse>,
     formData: FormData
-): Promise<ActionResult<ProductImage>> {
+): Promise<ActionResult<ProductImageResponse>> {
     try {
         const productId = formData.get("productId") as string;
         const file = formData.get("imageUrl") as File | null;
@@ -70,7 +83,7 @@ export async function addProductImage(
         if (!productId) {
             return {
                 ok: false,
-                response: emptyApiResponse<ProductImage>(),
+                response: emptyApiResponse<ProductImageResponse>(),
                 errors: { general: "Missing product ID" },
             };
         }
@@ -83,7 +96,7 @@ export async function addProductImage(
             if (!ACCEPTED_TYPES.includes(file.type)) {
                 return {
                     ok: false,
-                    response: emptyApiResponse<ProductImage>(),
+                    response: emptyApiResponse<ProductImageResponse>(),
                     errors: { imageUrl: "File must be a JPEG, PNG, or WebP image" },
                 };
             }
@@ -91,7 +104,7 @@ export async function addProductImage(
             if (file.size > MAX_SIZE) {
                 return {
                     ok: false,
-                    response: emptyApiResponse<ProductImage>(),
+                    response: emptyApiResponse<ProductImageResponse>(),
                     errors: { imageUrl: "File size must be less than 5MB" },
                 };
             }
@@ -108,7 +121,7 @@ export async function addProductImage(
             if (!uploadData?.success || !uploadData?.data?.imageUrl) {
                 return {
                     ok: false,
-                    response: emptyApiResponse<ProductImage>(),
+                    response: emptyApiResponse<ProductImageResponse>(),
                     errors: { general: "Missing image" },
                 }
             }
@@ -151,7 +164,7 @@ export async function addProductImage(
 
             let response;
             if (originalUrl && productImageId) {
-                response = await apiAction<ProductImage>(
+                response = await apiAction<ProductImageResponse>(
                     {
                         schema: ProductImageRequestSchema,
                         endpoint: `/products/${productId}/images/${productImageId}`,
@@ -168,13 +181,12 @@ export async function addProductImage(
                     try {
                         const oldFilePath = join(process.cwd(), "uploads", originalUrl.replace("/uploads/", ""));
                         await unlink(oldFilePath);
-                        console.log("Deleted old file:", oldFilePath);
                     } catch (deleteErr) {
                         console.warn("Could not delete old file:", deleteErr);
                     }
                 }
             } else {
-                response = await apiAction<ProductImage>(
+                response = await apiAction<ProductImageResponse>(
                     {
                         schema: ProductImageRequestSchema,
                         endpoint: `/products/${productId}/images`,
@@ -192,7 +204,7 @@ export async function addProductImage(
 
         return {
             ok: false,
-            response: emptyApiResponse<ProductImage>(),
+            response: emptyApiResponse<ProductImageResponse>(),
             errors: { general: "File not found" },
         };
     } catch (err) {
@@ -200,7 +212,7 @@ export async function addProductImage(
         const message = err instanceof Error ? err.message : "Unexpected Error";
         return {
             ok: false,
-            response: emptyApiResponse<ProductImage>(),
+            response: emptyApiResponse<ProductImageResponse>(),
             errors: { general: message },
         };
     }
@@ -226,6 +238,9 @@ export async function updateProduct(
         endpoint: `/products/${formData.get("id")}`,
         method: 'PUT',
         booleanFields: ["isActive"],
+        numberFields: ["price", "cost", "weight"],
+        jsonFields: ["dimensions", "additionalDetails"],
+        nullableFields: ["brandID", "discountID", "categoryID"],
         requireAuth: true
     }, formData);
 }
@@ -237,6 +252,6 @@ export async function setDefaultImage(
     return await apiAction<ProductResponse>({
         endpoint: `/products/${formData.get('productId')}/images/${formData.get('imageId')}/default`,
         method: 'PATCH',
-        requireAuth: true
+        requireAuth: true,
     }, formData);
 }

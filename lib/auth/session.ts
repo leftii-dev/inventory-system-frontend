@@ -7,7 +7,6 @@ export async function getSession():Promise<UserResponse | null> {
     const sessionCookie = cookieStore.get('SESSION')?.value;
 
     if (!sessionCookie) {
-        console.log('No session cookie found');
         return null;
     }
 

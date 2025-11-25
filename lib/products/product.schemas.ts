@@ -22,7 +22,7 @@ export const ProductRequestSchema = z.object({
     dimensions: z.record(z.string(), z.unknown()),
     additionalDetails: z.record(z.string(), z.unknown()),
     isActive: z.coerce.boolean().default(true),
-    categoryId: z.uuid({message: 'Invalid Category ID'}),
-    brandId: z.uuid({message: 'Invalid Brand ID'}).optional(),
-    discountId: z.uuid({message: 'Invalid Discount ID'}).optional(),
+    categoryID: z.uuid({message: 'Invalid Category ID'}).nullable().optional(),
+    brandID: z.uuid({message: 'Invalid Brand ID'}).nullable().optional(),
+    discountID: z.uuid({message: 'Invalid Discount ID'}).nullable().optional(),
 })

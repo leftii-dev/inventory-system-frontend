@@ -8,8 +8,6 @@ import { useSession } from "@/lib/hooks/useSession";
 export default function NavLinks() {
     const { user, isLoading } = useSession();
     const currentPath = usePathname();
-    console.log(isLoading)
-    console.log(user)
     const links = [
         { href: "/", label: "Home" },
         { href: "/about", label: "About" },

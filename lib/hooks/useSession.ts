@@ -18,8 +18,6 @@ export function useSession() {
         dedupingInterval: 2000, // Prevent duplicate requests within 2s
     });
 
-    console.log("useSession data:", data);
-
     return {
         user: data?.user ?? null,
         isLoading: isLoading || data === undefined,

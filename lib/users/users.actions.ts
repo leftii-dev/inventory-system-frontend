@@ -31,3 +31,4 @@ export async function updateSelfAction(
         requireAuth: true,
     }, formData)
 }
+

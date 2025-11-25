@@ -1,6 +1,6 @@
 'use client'
 
-import { ProductImage } from "@/lib/products/product.types";
+import { ProductImageResponse } from "@/lib/products/product.types";
 import Image from "next/image";
 import UploadProductImageModal from "@/components/product/UploadProductImageModal";
 import { imageLoader } from "@/lib/utils/util.image";
@@ -8,7 +8,7 @@ import { useRef, useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface Props {
-    images: ProductImage[];
+    images: ProductImageResponse[];
     productId: string;
 }
 
@@ -16,7 +16,7 @@ export default function ProductImageGrid({ images, productId }: Props) {
     const scrollRef = useRef<HTMLDivElement>(null);
     const [canScrollLeft, setCanScrollLeft] = useState(false);
     const [canScrollRight, setCanScrollRight] = useState(false);
-    const [selectedImage, setSelectedImage] = useState<ProductImage | undefined>(
+    const [selectedImage, setSelectedImage] = useState<ProductImageResponse | undefined>(
         images.find(img => img.isDefault) ?? images[0]
     );
 
@@ -49,7 +49,7 @@ export default function ProductImageGrid({ images, productId }: Props) {
         });
     };
 
-    const handleImageClick = (image: ProductImage) => {
+    const handleImageClick = (image: ProductImageResponse) => {
         setSelectedImage(image);
     };
 
@@ -66,8 +66,8 @@ export default function ProductImageGrid({ images, productId }: Props) {
                     placeholder={selectedImage?.blurDataUrl ? 'blur' : undefined}
                     className="object-contain p-2"
                 />
-                {selectedImage.isDefault && (
-                    <div className="absolute top-1 right-1 bg-brand-primary text-white text-xs px-1.5 py-0.5 rounded-md font-medium shadow-sm">
+                {selectedImage?.isDefault && (
+                    <div className="absolute z-10 top-1 right-1 bg-brand-primary text-white text-xs px-1.5 py-0.5 rounded-md font-medium shadow-sm">
                         Default
                     </div>
                 )}

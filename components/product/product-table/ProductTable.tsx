@@ -98,25 +98,28 @@ export default function ProductTable(
                     <th>Description</th>
                     <th>Code</th>
                     <th>Category</th>
+                    <th>Cost</th>
                     <th>Retail</th>
                     <th>Active Discount</th>
                     <th>Main Image</th>
                 </tr>
                 </thead>
                 <tbody>
-                <tr className={`divide-x divide-gray-300 text-center border-b border-gray-300`}>
+                <tr className={`divide-x divide-gray-300 bg-green-100 text-center border-b border-gray-300`}>
                     <td><StringSearch minLength={2} maxLength={20} param={`skuContains`} filters={filters} setFilters={setFilters} /></td>
                     <td><SelectionSearch param={`brand`} selections={brandPairs} setFilters={setFilters} /></td>
                     <td colSpan={2}><StringSearch minLength={2} maxLength={50} param={`query`} filters={filters} setFilters={setFilters} /></td>
                     <td><StringSearch param={`codeContains`} minLength={2} maxLength={10} filters={filters} setFilters={setFilters} /></td>
                     <td><SelectionSearch param={`category`} selections={categoryPairs} setFilters={setFilters} /></td>
-                    <td><AboveBelowEqualsSearch param={`price`} setFilters={setFilters} /></td>
-                    <td><SelectionSearch param={`discount`} selections={discountPairs} setFilters={setFilters} /></td>
                     <td>
                         {'cost' in (products?.[0] || {}) ? (
                             <AboveBelowEqualsSearch param="cost" setFilters={setFilters} />
                         ) : null}
                     </td>
+                    <td><AboveBelowEqualsSearch param={`price`} setFilters={setFilters} /></td>
+                    <td><SelectionSearch param={`discount`} selections={discountPairs} setFilters={setFilters} /></td>
+                    <td></td>
+
                 </tr>
                 {products && (
                     products.map((product) => {

@@ -2,7 +2,7 @@
 
 import {useState} from "react";
 import {PenSquare, Trash2, X, Star} from "lucide-react";
-import { ProductImage } from "@/lib/products/product.types";
+import { ProductImageResponse } from "@/lib/products/product.types";
 import FormCard from "@/components/form/FormCard";
 import { emptyApiResponse } from "@/lib/types/validation.types";
 import FormInput from "@/components/form/FormInput";
@@ -14,7 +14,7 @@ import {useRouter} from "next/navigation";
 
 interface Props {
     productId: string;
-    image?: ProductImage;
+    image?: ProductImageResponse;
 }
 
 export default function UploadProductImageModal({ productId, image }: Props) {
@@ -33,10 +33,8 @@ export default function UploadProductImageModal({ productId, image }: Props) {
     }
 
     const handleSuccess = () => {
-        console.log('handleSuccess called - closing modals');
         closeModals();
         setTimeout(() => {
-            console.log('refreshing router');
             router.refresh();
         }, 100);
     }
@@ -280,11 +278,11 @@ export default function UploadProductImageModal({ productId, image }: Props) {
                             )}
                         </div>
 
-                        <FormCard<ProductImage>
+                        <FormCard<ProductImageResponse>
                             action={addProductImage}
                             initialState={{
                                 ok: true,
-                                response: emptyApiResponse<ProductImage>(),
+                                response: emptyApiResponse<ProductImageResponse>(),
                                 errors: {},
                             }}
                             onSuccess={handleSuccess}

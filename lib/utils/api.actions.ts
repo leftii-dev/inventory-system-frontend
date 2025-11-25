@@ -24,6 +24,8 @@ type Options = {
     method?: SafeHttpMethod;
     numberFields?: string[];
     booleanFields?: string[];
+    jsonFields?: string[];
+    nullableFields?: string[];
     requireAuth?: boolean;
     schema?: z.ZodTypeAny;
     extraData?: Record<string, unknown>;
@@ -39,31 +41,33 @@ export async function apiAction<D = unknown>(
         method = 'GET',
         numberFields = [],
         booleanFields = [],
+        jsonFields = [],
+        nullableFields = [],
         requireAuth = false,
         extraData = {},
     } = options;
 
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+    const session = await getSession();
 
     // Handle authentication
-    if (requireAuth) {
-        const session = await getSession();
-        if (!session) {
-            return {
-                ok: false,
-                response: emptyApiResponse<D>(),
-                errors: { general: 'Unauthorized' },
-                unauthorized: true,
-            };
-        }
+    if (requireAuth && !session) {
+        return {
+            ok: false,
+            response: emptyApiResponse<D>(),
+            errors: { general: 'Unauthorized' },
+            unauthorized: true,
+        };
+    }
 
+    if(session) {
         // Get the SESSION cookie to forward to backend
         const cookieStore = await cookies();
         const sessionCookie = cookieStore.get('SESSION')?.value;
 
         if (sessionCookie) {
             headers['Cookie'] = `SESSION=${sessionCookie}`;
-        } else {
+        } else if (requireAuth) {
             return {
                 ok: false,
                 response: emptyApiResponse<D>(),
@@ -76,7 +80,7 @@ export async function apiAction<D = unknown>(
     // Validate and prepare body data
     let bodyData: Record<string, unknown>;
     if (schema && formData) {
-        const input = formDataToTypedObject(formData, numberFields, booleanFields);
+        const input = formDataToTypedObject(formData, numberFields, booleanFields, jsonFields, nullableFields);
         const validation = validateSchema(schema, input);
 
         if (!validation.success) {

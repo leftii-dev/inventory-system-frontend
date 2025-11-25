@@ -36,7 +36,7 @@ export default function ProductLine({product}: {product: ProductResponse}) {
                     <ProductCell>{product.discountName}</ProductCell>
 
                 <ProductCell>
-                    <div className={`relative w-full h-6`}>
+                    <div className={`relative w-full h-10`}>
                         <Image
                             src={defaultImage?.imageUrl ?? `/images/product-placeholder.svg`}
                             alt={defaultImage?.altText ?? `Placeholder for missing product image`}

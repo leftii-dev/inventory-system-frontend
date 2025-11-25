@@ -15,8 +15,6 @@ export default async function ProfilePage() {
 
     const initialData = result.response;
 
-    console.log(initialData);
-
     return (
         <div className={`flex flex-col items-center justify-center`}>
             <ProfileForm initialData={initialData}/>

@@ -19,12 +19,12 @@ export type ApiResponseDto<T = unknown> = {
 
 
 
-export function emptyApiResponse<T>(): ApiResponseDto<T> {
+export function emptyApiResponse<T>(defaultValue?: T): ApiResponseDto<T> {
     return {
         success: false,
         message: "",
         timestamp: new Date().toISOString(),
-        data: {} as T,
+        data: defaultValue || ({} as T),
         validationErrors: [],
     };
 }
