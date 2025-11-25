@@ -4,7 +4,7 @@ type FormSelectInputProps = React.SelectHTMLAttributes<HTMLSelectElement> & {
     name: string,
     label: string,
     data: { value: string; label: string }[],
-    error?: string
+    error?: string,
 }
 
 export default function FormSelectInput(

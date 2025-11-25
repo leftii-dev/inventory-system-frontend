@@ -15,26 +15,35 @@ import {createProduct, updateProduct} from "@/lib/products/product.actions";
 import FormTextArea from "@/components/form/FormTextArea";
 import FormSelectInput from "@/components/form/FormSelectInput";
 import DynamicKeyValueInput from "@/components/form/DynamicKeyValueInput";
-import SubmitButton from "@/components/SubmitButton";
 import {getEmployeeByIdAction} from "@/lib/employee/employee.actions";
 import {useRouter} from "next/navigation";
 import {ActionResult} from "@/lib/utils/api.actions";
+import BrandQuickAddButton from "@/components/brand/BrandQuickAddButton";
+import SimpleButton from "@/components/SimpleButton";
 
 type FormProps = {
     isNew?: boolean;
     initialProduct: ApiResponseDto<ProductResponse>;
     categories: CategoryResponse[];
-    brands: BrandResponse[];
+    initialBrands: BrandResponse[];
     discounts: DiscountResponse[];
 }
 
-export default function ProductEditForm({isNew, initialProduct, categories, brands, discounts}: FormProps) {
+export default function ProductEditForm({isNew, initialProduct, categories, initialBrands, discounts}: FormProps) {
     const [isElevated, setIsElevated] = useState<boolean>(false);
     const [hasChanges, setHasChanges] = useState<boolean>(false);
     const [modifiedBy, setModifiedBy] = useState<string>('');
     const [createdBy, setCreatedBy] = useState<string>('');
     const {user} = useSession()
     const router = useRouter()
+
+    const [brands, setBrands] = useState<BrandResponse[]>(initialBrands);
+    const [selectedBrandId, setSelectedBrandId] = useState<string>(initialProduct.data.brandID || '');
+    const handleBrandAdded = (newBrand: BrandResponse) => {
+        setBrands((prevBrands) => [...prevBrands, newBrand]);
+        setSelectedBrandId(newBrand.id);
+        setHasChanges(true)
+    };
 
     const handleCreateAction = async (prevState: ActionResult<ProductResponse>, formData: FormData) => {
         const result = await createProduct(prevState, formData);
@@ -155,18 +164,18 @@ export default function ProductEditForm({isNew, initialProduct, categories, bran
                                         error={state.errors?.description || undefined}
                                     />
                                     <div className={'flex flex-row w-full justify-between gap-2'}>
-                                        <FormSelectInput
-                                            key={`brand-${state.response?.data.brandID ?? 'empty'}`}
-                                            label={'Brand'}
-                                            name={'brandID'}
-                                            data={brands.map(brand => ({value: brand.id, label: brand.name}))}
-                                            defaultValue={
-                                                state.response?.data
-                                                    ? (state.response.data.brandID ?? '')
-                                                    : (initialProduct.data.brandID ?? '')
-                                            }
-                                            error={state.errors?.brandID || undefined}
-                                        />
+                                        <div id={'brand-selector'} className={'flex flex-row gap-2 items-end'}>
+                                            <FormSelectInput
+                                                key={`brand-select-${selectedBrandId}`}
+                                                label={'Brand'}
+                                                name={'brandID'}
+                                                data={brands.map(brand => ({value: brand.id, label: brand.name}))}
+                                                defaultValue={selectedBrandId}
+                                                onChange={(e) => setSelectedBrandId(e.target.value)}
+                                                error={state.errors?.brandID || undefined}
+                                            />
+                                            <BrandQuickAddButton onBrandAdded={handleBrandAdded}/>
+                                        </div>
                                         <FormSelectInput
                                             key={`category-${state.response?.data.categoryID ?? 'empty'}`}
                                             label={'Category'}
@@ -191,9 +200,6 @@ export default function ProductEditForm({isNew, initialProduct, categories, bran
                                             }
                                             error={state.errors?.discountID || undefined}
                                         />
-                                    </div>
-                                    <div className={'flex flex-row justify-start'}>
-                                        <SubmitButton disabled={!hasChanges}>{!isNew ? 'Save Changes' : 'Save New Product'}</SubmitButton>
                                     </div>
                                 </div>
 
@@ -282,7 +288,15 @@ export default function ProductEditForm({isNew, initialProduct, categories, bran
                                         )
                                     }
 
-
+                                    <div className={'flex flex-row justify-end'}>
+                                        <SimpleButton
+                                            type={'submit'}
+                                            variant={'primary'}
+                                            disabled={!hasChanges}
+                                        >
+                                            {!isNew ? 'Save Changes' : 'Save New Product'}
+                                        </SimpleButton>
+                                    </div>
                                 </div>
                             </div>
                         </>
