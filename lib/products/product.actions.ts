@@ -266,3 +266,38 @@ export async function createBrand(
         requireAuth: true,
     }, formData);
 }
+
+export async function createCategory(
+    prevState: ActionResult<CategoryResponse>,
+    formData: FormData
+): Promise<ActionResult<CategoryResponse>> {
+    // Check if parentCategoryID is set and handle accordingly
+    if(formData.get('parentCategoryID') !== '') {
+        const parentCategoryID = formData.get('parentCategoryID') as string;
+        formData.delete('parentCategoryID');
+
+        const res = await apiAction<CategoryResponse>({
+            endpoint: `/categories`,
+            schema: BrandRequestSchema,
+            method: 'POST',
+            requireAuth: true,
+        }, formData);
+
+        const parentFormData = new FormData();
+        parentFormData.set('parentCategoryID', parentCategoryID);
+
+        return res;
+    }
+    return
+}
+
+export async function createCategoryHierarchy(
+    prevState: ActionResult<unknown>,
+    formData: FormData
+): Promise<ActionResult<unknown>> {
+    return await apiAction<unknown>({
+        endpoint: `/category-hierarchy`,
+        method: 'POST',
+        requireAuth: true,
+    }, formData);
+})
