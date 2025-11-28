@@ -20,16 +20,18 @@ import {useRouter} from "next/navigation";
 import {ActionResult} from "@/lib/utils/api.actions";
 import BrandQuickAddButton from "@/components/brand/BrandQuickAddButton";
 import SimpleButton from "@/components/SimpleButton";
+import CategoryQuickAddButton from "@/components/category/CategoryQuickAddButton";
+import DiscountQuickAddButton from "@/components/discount/DiscountQuickAddButton";
 
 type FormProps = {
     isNew?: boolean;
     initialProduct: ApiResponseDto<ProductResponse>;
-    categories: CategoryResponse[];
+    initialCategories: CategoryResponse[];
     initialBrands: BrandResponse[];
-    discounts: DiscountResponse[];
+    initialDiscounts: DiscountResponse[];
 }
 
-export default function ProductEditForm({isNew, initialProduct, categories, initialBrands, discounts}: FormProps) {
+export default function ProductEditForm({isNew, initialProduct, initialCategories, initialBrands, initialDiscounts}: FormProps) {
     const [isElevated, setIsElevated] = useState<boolean>(false);
     const [hasChanges, setHasChanges] = useState<boolean>(false);
     const [modifiedBy, setModifiedBy] = useState<string>('');
@@ -44,6 +46,27 @@ export default function ProductEditForm({isNew, initialProduct, categories, init
         setSelectedBrandId(newBrand.id);
         setHasChanges(true)
     };
+
+    const [categories, setCategories] = useState<CategoryResponse[]>(initialCategories);
+    const [selectedCategoryID, setSelectedCategoryID] = useState<string>(initialProduct.data.categoryID || '')
+    const handleAddCategory = (newCategory: CategoryResponse) => {
+        setCategories((prevCategories) => [...prevCategories, newCategory]);
+        setSelectedCategoryID(newCategory.id);
+        setHasChanges(true);
+    }
+
+    const [discounts, setDiscounts] = useState<DiscountResponse[]>(initialDiscounts);
+    const [currentPrice, setCurrentPrice] = useState<number>(Number(initialProduct.data.price) || 0);
+    const [selectedDiscountID, setSelectedDiscountID] = useState<string>(initialProduct.data.discountID || '')
+    const selectedDiscount = initialDiscounts.find(d => d.id === selectedDiscountID)
+    const activeDiscountPercentage: number = selectedDiscount
+        ? Number(selectedDiscount.discountPercentage)
+        : 0;
+    const handleAddDiscount = (newDiscount: DiscountResponse) => {
+        setDiscounts((prevDiscounts) => [...prevDiscounts, newDiscount]);
+        setSelectedDiscountID(newDiscount.id);
+        setHasChanges(true);
+    }
 
     const handleCreateAction = async (prevState: ActionResult<ProductResponse>, formData: FormData) => {
         const result = await createProduct(prevState, formData);
@@ -123,186 +146,201 @@ export default function ProductEditForm({isNew, initialProduct, categories, init
     }, [isElevated, initialProduct]);
 
     return (
-            <FormCard<ProductResponse>
-                action={isNew ? handleCreateAction : updateProduct}
-                onChange={checkForChanges}
-                onInput={checkForChanges}
-                initialState={{
-                    ok: true,
-                    response: initialProduct,
-                    errors: {}
-                }}
-            >
-                {(state) => {
-                    return(
-                        <>
-                            <div key={state.errors ? JSON.stringify(state.errors) : 'form-clean'} className={'flex flex-row w-full grow gap-x-8 mb-6'}>
-                                <div
-                                    className={'flex flex-col gap-4 w-2/3'}
-                                >
-                                    <FormInput
-                                        label={'SKU'}
-                                        name={'sku'}
-                                        type={'text'}
-                                        defaultValue={state.response?.data.sku || initialProduct.data.sku}
-                                        error={state.errors?.sku || undefined}
-                                        required={true}
-                                        />
-                                    <FormInput
-                                        label={'Product Name'}
-                                        name={'name'}
-                                        type={'text'}
-                                        defaultValue={state.response?.data.name || initialProduct.data.name}
-                                        error={state.errors?.name || undefined}
-                                        required={true}
-                                    />
-                                    <FormTextArea
-                                        label={'Product Description'}
-                                        name={'description'}
-                                        type={'textarea'}
-                                        defaultValue={state.response?.data.description || initialProduct.data.description}
-                                        error={state.errors?.description || undefined}
-                                    />
-                                    <div className={'flex flex-row w-full justify-between gap-2'}>
-                                        <div id={'brand-selector'} className={'flex flex-row gap-2 items-end'}>
-                                            <FormSelectInput
-                                                key={`brand-select-${selectedBrandId}`}
-                                                label={'Brand'}
-                                                name={'brandID'}
-                                                data={brands.map(brand => ({value: brand.id, label: brand.name}))}
-                                                defaultValue={selectedBrandId}
-                                                onChange={(e) => setSelectedBrandId(e.target.value)}
-                                                error={state.errors?.brandID || undefined}
-                                            />
-                                            <BrandQuickAddButton onBrandAdded={handleBrandAdded}/>
-                                        </div>
+        <FormCard<ProductResponse>
+            action={isNew ? handleCreateAction : updateProduct}
+            onChange={checkForChanges}
+            onInput={checkForChanges}
+            onSuccess={() => setHasChanges(false)}
+            initialState={{
+                ok: true,
+                response: initialProduct,
+                errors: {}
+            }}
+        >
+            {(state) => {
+                return(
+                    <>
+                        <div key={state.errors ? JSON.stringify(state.errors) : 'form-clean'} className={'flex flex-row w-full grow gap-x-8 mb-6'}>
+                            <div
+                                className={'flex flex-col gap-4 w-2/3'}
+                            >
+                                <FormInput
+                                    label={'SKU'}
+                                    name={'sku'}
+                                    type={'text'}
+                                    defaultValue={state.response?.data.sku || initialProduct.data.sku}
+                                    error={state.errors?.sku || undefined}
+                                    required={true}
+                                />
+                                <FormInput
+                                    label={'Product Name'}
+                                    name={'name'}
+                                    type={'text'}
+                                    defaultValue={state.response?.data.name || initialProduct.data.name}
+                                    error={state.errors?.name || undefined}
+                                    required={true}
+                                />
+                                <FormTextArea
+                                    label={'Product Description'}
+                                    name={'description'}
+                                    type={'textarea'}
+                                    defaultValue={state.response?.data.description || initialProduct.data.description}
+                                    error={state.errors?.description || undefined}
+                                />
+                                <div className={'flex flex-row w-full justify-between gap-2'}>
+                                    <div id={'brand-selector'} className={'flex flex-row items-end'}>
                                         <FormSelectInput
-                                            key={`category-${state.response?.data.categoryID ?? 'empty'}`}
+                                            key={`brand-select-${selectedBrandId}`}
+                                            label={'Brand'}
+                                            name={'brandID'}
+                                            data={brands.map(brand => ({value: brand.id, label: brand.name}))}
+                                            defaultValue={selectedBrandId}
+                                            onChange={(e) => setSelectedBrandId(e.target.value)}
+                                            error={state.errors?.brandID || undefined}
+                                        />
+                                        <BrandQuickAddButton onBrandAdded={handleBrandAdded}/>
+                                    </div>
+                                    <div id={'category-selector'} className={'flex flex-row items-end'}>
+                                        <FormSelectInput
+                                            key={`category-${selectedCategoryID}`}
                                             label={'Category'}
                                             name={'categoryID'}
                                             data={categories.map(category => ({value: category.id, label: category.name}))}
-                                            defaultValue={
-                                                state.response?.data
-                                                    ? (state.response.data.categoryID ?? '')
-                                                    : (initialProduct.data.categoryID ?? '')
-                                            }
+                                            onChange={(e) => setSelectedCategoryID(e.target.value)}
+                                            defaultValue={selectedCategoryID}
                                             error={state.errors?.categoryID || undefined}
                                         />
+                                        <CategoryQuickAddButton
+                                            onCategoryAdded={handleAddCategory}
+                                            categories={categories}
+                                            discounts={discounts}
+                                        />
+                                    </div>
+                                    <div id={'discount-selector'} className={'flex flex-row items-end'}>
                                         <FormSelectInput
                                             key={`discount-${state.response?.data.discountID ?? 'empty'}`}
                                             label={'Discount'}
                                             name={'discountID'}
                                             data={discounts.map(discount => ({value: discount.id, label: discount.name}))}
-                                            defaultValue={
-                                                state.response?.data
-                                                    ? (state.response.data.discountID ?? '')
-                                                    : (initialProduct.data.discountID ?? '')
-                                            }
+                                            defaultValue={selectedDiscountID}
+                                            onChange={(e) => setSelectedDiscountID(e.target.value)}
                                             error={state.errors?.discountID || undefined}
                                         />
+                                        <DiscountQuickAddButton onDiscountAdded={handleAddDiscount} />
                                     </div>
+
                                 </div>
+                            </div>
 
 
-                                <div className={'flex flex-col gap-4 mb-6'}>
-                                    <div className={'flex flex-row justify-between'}>
-                                        {'cost' in state.response?.data && 'cost' in initialProduct.data && (
-                                            <FormInput
-                                                label={'Cost'}
-                                                name={'cost'}
-                                                type={'number'}
-                                                step={0.01}
-                                                defaultValue={state.response?.data.cost || initialProduct.data.cost || ''}
-                                                error={state.errors?.cost || undefined}
-                                            />
-                                        )
-                                        }
-
+                            <div className={'flex flex-col gap-4 mb-6'}>
+                                <div className={'flex flex-row justify-between'}>
+                                    {'cost' in state.response?.data && 'cost' in initialProduct.data && (
+                                        <FormInput
+                                            label={'Cost'}
+                                            name={'cost'}
+                                            type={'number'}
+                                            step={0.01}
+                                            defaultValue={state.response?.data.cost || initialProduct.data.cost || ''}
+                                            error={state.errors?.cost || undefined}
+                                        />
+                                    )
+                                    }
+                                    <div className={'flex flex-col gap-2'}>
                                         <FormInput
                                             label={'Price'}
                                             name={'price'}
                                             type={'number'}
                                             defaultValue={state.response?.data.price || initialProduct.data.price || ''}
                                             step={0.01}
+                                            onChange={(e) => setCurrentPrice(Number(e.target.value))}
                                             error={state.errors?.price || undefined}
                                         />
+                                        {activeDiscountPercentage > 0 && (
+                                            <p>
+                                                Discount Price: ${(currentPrice * (1 - (activeDiscountPercentage / 100))).toFixed(2)}
+                                            </p>
+
+                                        )}
                                     </div>
-                                    <div className={'flex flex-col gap-10 mb-6'}>
-                                        <FormInput
-                                            label={'Weight'}
-                                            name={'weight'}
-                                            type={'number'}
-                                            defaultValue={
+
+                                </div>
+                                <div className={'flex flex-col gap-10 mb-6'}>
+                                    <FormInput
+                                        label={'Weight'}
+                                        name={'weight'}
+                                        type={'number'}
+                                        defaultValue={
                                             'weight' in state.response?.data ? state.response?.data.weight
                                                 : 'weight' in initialProduct.data ? initialProduct.data.weight : ''}
-                                            step={0.01}
-                                            error={state.errors?.weight || undefined}
+                                        step={0.01}
+                                        error={state.errors?.weight || undefined}
+                                    />
+
+                                    <div className={'flex flex-col gap-6'}>
+                                        <DynamicKeyValueInput
+                                            label={'Product Dimensions'}
+                                            name={'dimensions'}
+                                            defaultValue={'dimensions' in state.response?.data ? state.response?.data.dimensions
+                                                : 'dimensions' in initialProduct.data ? initialProduct.data.dimensions :
+                                                    {}}
+                                            error={state.errors?.dimensions || undefined}
                                         />
 
-                                        <div className={'flex flex-col gap-6'}>
-                                            <DynamicKeyValueInput
-                                                label={'Product Dimensions'}
-                                                name={'dimensions'}
-                                                defaultValue={'dimensions' in state.response?.data ? state.response?.data.dimensions
-                                                    : 'dimensions' in initialProduct.data ? initialProduct.data.dimensions :
-                                                        {}}
-                                                error={state.errors?.dimensions || undefined}
-                                            />
-
-                                            <DynamicKeyValueInput
-                                                label={'Additional Details'}
-                                                name={'additionalDetails'}
-                                                defaultValue={'additionalDetails' in state.response?.data ? state.response?.data.additionalDetails
-                                                    : 'additionalDetails' in initialProduct.data ? initialProduct.data.additionalDetails :
+                                        <DynamicKeyValueInput
+                                            label={'Additional Details'}
+                                            name={'additionalDetails'}
+                                            defaultValue={'additionalDetails' in state.response?.data ? state.response?.data.additionalDetails
+                                                : 'additionalDetails' in initialProduct.data ? initialProduct.data.additionalDetails :
                                                     {}}
-                                                error={state.errors?.additionalDetails || undefined}
-                                            />
-                                        </div>
-                                        <input type={'hidden'} name={'id'} value={initialProduct.data.id}/>
-
+                                            error={state.errors?.additionalDetails || undefined}
+                                        />
                                     </div>
-                                    {
-                                        'active' in state.response.data && isElevated && (
-                                            <div className={'flex flex-col justify-end mt-auto items-end'}>
+                                    <input type={'hidden'} name={'id'} value={initialProduct.data.id}/>
+
+                                </div>
+                                {
+                                    'active' in state.response.data && isElevated && (
+                                        <div className={'flex flex-col justify-end mt-auto items-end'}>
                                                 <span
                                                     className={'block mb-1 font-medium font-inter'}
                                                 >
                                                     Created: {new Date(state.response.data.createdAt).toLocaleString()} - {createdBy ? createdBy : 'Fetching...'}
                                                 </span>
 
-                                                <span
-                                                    className={'block mb-1 font-medium font-inter'}
-                                                >
+                                            <span
+                                                className={'block mb-1 font-medium font-inter'}
+                                            >
                                                     Last Modified: {new Date(state.response.data.modifiedAt).toLocaleString()} - {modifiedBy ? modifiedBy : 'Fetching...'}
                                                 </span>
 
 
 
 
-                                                <div className="flex justify-end items-center gap-x-2 p-2">
-                                                    <label className="text-sm font-medium text-gray-700">
-                                                        {state.response.data.active ? 'Active' : 'Inactive'}
-                                                    </label>
-                                                </div>
+                                            <div className="flex justify-end items-center gap-x-2 p-2">
+                                                <label className="text-sm font-medium text-gray-700">
+                                                    {state.response.data.active ? 'Active' : 'Inactive'}
+                                                </label>
                                             </div>
-                                        )
-                                    }
+                                        </div>
+                                    )
+                                }
 
-                                    <div className={'flex flex-row justify-end'}>
-                                        <SimpleButton
-                                            type={'submit'}
-                                            variant={'primary'}
-                                            disabled={!hasChanges}
-                                        >
-                                            {!isNew ? 'Save Changes' : 'Save New Product'}
-                                        </SimpleButton>
-                                    </div>
+                                <div className={'flex flex-row justify-end'}>
+                                    <SimpleButton
+                                        type={'submit'}
+                                        variant={'primary'}
+                                        disabled={!hasChanges}
+                                    >
+                                        {!isNew ? 'Save Changes' : 'Save New Product'}
+                                    </SimpleButton>
                                 </div>
                             </div>
-                        </>
-                    )
-                }}
-            </FormCard>
+                        </div>
+                    </>
+                )
+            }}
+        </FormCard>
     )
 }
 

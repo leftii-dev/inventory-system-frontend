@@ -1,5 +1,5 @@
 import {z} from "zod";
-import {priceSchema, costSchema, weightSchema} from "@/lib/utils/util.schema";
+import {priceSchema, costSchema, weightSchema, percentageSchema} from "@/lib/utils/util.schema";
 
 export const ProductImageRequestSchema = z.object({
     imageUrl: z.string()
@@ -36,4 +36,12 @@ export const CategoryRequestSchema = z.object({
     name: z.string().min(2, {error: 'Name must be at least 2 characters long'}).max(50, {error: 'Name must be 50 characters or less'}),
     description: z.string().max(3000, {error: 'Description must be 3000 characters or less'}).optional(),
     discountID: z.uuid({message: 'Invalid Discount ID'}).nullable().optional(),
+})
+
+export const DiscountRequestSchema = z.object({
+    discountCode: z.string().min(6, {error: 'Discount Code must be at least 6 characters'}).max(30, {error: 'Discount code must be 30 characters or less'}),
+    name: z.string().min(1, {error: 'Discount name cannot be blank'}).max(50, {error: 'Discount name must be 50 characters or less'}),
+    description: z.string().max(3000, {error: 'Description must be 3000 characters or less'}).optional(),
+    discountPercentage: percentageSchema,
+    active: z.coerce.boolean().default(true)
 })

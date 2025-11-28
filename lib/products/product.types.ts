@@ -117,3 +117,19 @@ interface DiscountDetail extends DiscountBasic {
     modifiedAt: string;
     active: boolean;
 }
+
+export type CategoryHierarchyResponse = CategoryHierarchyResponseBasic | CategoryHierarchyResponseDetail;
+
+interface CategoryHierarchyResponseBasic {
+    id: string;
+    categoryID: string;
+    parentCategoryID: string;
+}
+
+interface CategoryHierarchyResponseDetail extends CategoryHierarchyResponseBasic {
+    createdAt: string;
+    createdBy: string;
+    modifiedAt: string;
+    modifiedBy: string;
+    active: boolean;
+}

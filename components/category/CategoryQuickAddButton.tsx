@@ -2,7 +2,7 @@
 
 import {CategoryResponse, DiscountResponse} from "@/lib/products/product.types";
 import SimpleButton from "@/components/SimpleButton";
-import {FormInput, Plus} from "lucide-react";
+import {Plus} from "lucide-react";
 import Modal from "@/components/ui/Modal";
 import FormCard from "@/components/form/FormCard";
 import {emptyApiResponse} from "@/lib/types/validation.types";
@@ -10,10 +10,12 @@ import FormTextArea from "@/components/form/FormTextArea";
 import {useState} from "react";
 import {ActionResult} from "@/lib/utils/api.actions";
 import FormSelectInput from "@/components/form/FormSelectInput";
+import FormInput from "@/components/form/FormInput";
+import {createCategory} from "@/lib/products/product.actions";
 
 type Props = {
     onCategoryAdded: (newCategory: CategoryResponse) => void;
-    categories?: CategoryResponse[];
+    categories: CategoryResponse[];
     discounts: DiscountResponse[];
 }
 
@@ -75,13 +77,11 @@ export default function CategoryQuickAddButton({ onCategoryAdded, categories, di
                                     data={discounts.map(discount => ({value: discount.id, label: discount.name}))}
                                     error={state.errors?.discountID || undefined}
                                 />
-                                {categories && categories.length > 0 && (
-                                    <FormSelectInput
-                                        label={'Parent Category'}
-                                        data={categories.map(category => ({value: category.id, label: category.name}))}
-                                        name={'parentCategoryID'}
-                                    />
-                                )}
+                                <FormSelectInput
+                                    label={'Parent Category'}
+                                    data={categories.map(category => ({value: category.id, label: category.name}))}
+                                    name={'parentCategoryID'}
+                                />
                                 <SimpleButton
                                     type="submit"
                                     variant={'primary'}

@@ -1,7 +1,7 @@
 'use server';
 
 import {
-    BrandResponse,
+    BrandResponse, CategoryHierarchyResponse,
     CategoryResponse,
     DiscountResponse,
     ProductImageResponse,
@@ -9,7 +9,12 @@ import {
 } from "@/lib/products/product.types";
 import {ActionResult, apiAction} from "@/lib/utils/api.actions";
 import {toQueryString} from "@/lib/utils/util.params";
-import {BrandRequestSchema, ProductImageRequestSchema, ProductRequestSchema} from "@/lib/products/product.schemas";
+import {
+    BrandRequestSchema,
+    CategoryRequestSchema, DiscountRequestSchema,
+    ProductImageRequestSchema,
+    ProductRequestSchema
+} from "@/lib/products/product.schemas";
 import {emptyApiResponse} from "@/lib/types/validation.types";
 import {join} from 'path'
 import {unlink} from "node:fs/promises";
@@ -272,32 +277,29 @@ export async function createCategory(
     formData: FormData
 ): Promise<ActionResult<CategoryResponse>> {
     // Check if parentCategoryID is set and handle accordingly
-    if(formData.get('parentCategoryID') !== '') {
-        const parentCategoryID = formData.get('parentCategoryID') as string;
-        formData.delete('parentCategoryID');
 
-        const res = await apiAction<CategoryResponse>({
-            endpoint: `/categories`,
-            schema: BrandRequestSchema,
-            method: 'POST',
-            requireAuth: true,
-        }, formData);
+    const parentCategoryID = formData.get('parentCategoryID') as string;
+    formData.delete('parentCategoryID');
 
-        const parentFormData = new FormData();
-        parentFormData.set('parentCategoryID', parentCategoryID);
-
-        return res;
-    }
-    return
-}
-
-export async function createCategoryHierarchy(
-    prevState: ActionResult<unknown>,
-    formData: FormData
-): Promise<ActionResult<unknown>> {
-    return await apiAction<unknown>({
-        endpoint: `/category-hierarchy`,
+    return await apiAction<CategoryResponse>({
+        endpoint: `/categories${parentCategoryID.length > 0 ? `?parent=${parentCategoryID}` : ''}`,
+        schema: CategoryRequestSchema,
         method: 'POST',
         requireAuth: true,
     }, formData);
-})
+
+}
+
+export async function createDiscount(
+    prevState: ActionResult<DiscountResponse>,
+    formData: FormData
+): Promise<ActionResult<DiscountResponse>> {
+    return await apiAction<DiscountResponse>({
+        endpoint: `/discounts`,
+        schema: DiscountRequestSchema,
+        method: 'POST',
+        requireAuth: true,
+        numberFields: ['discountPercentage'],
+        booleanFields: ['active'],
+    }, formData);
+}

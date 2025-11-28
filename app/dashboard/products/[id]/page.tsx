@@ -56,9 +56,9 @@ export default async function DashboardProductDetailPage({params}: {params: {id:
                 <ProductEditForm
                     isNew={isNew}
                     initialProduct={formInitialData}
-                    categories={categories.response?.data || []}
+                    initialCategories={categories.response?.data || []}
                     initialBrands={brands.response?.data || []}
-                    discounts={discounts.response?.data || []}
+                    initialDiscounts={discounts.response?.data || []}
                 />
             </div>
         </div>
