@@ -2,6 +2,7 @@ import {getBrands, getCategories, getDiscounts, getProducts} from "@/lib/product
 import {ProductFilters} from "@/lib/products/product.types";
 import {getParam} from "@/lib/utils/util.params";
 import ResponsiveProductTable from "@/components/product/product-table/ResponsiveProductTable";
+import AddButton from "@/components/ui/AddButton";
 
 export default async function DashboardProductsPage({
                                                 searchParams
@@ -39,7 +40,7 @@ export default async function DashboardProductsPage({
     ]);
 
     return (
-        <div>
+        <div className={'rounded-r-lg'}>
             <ResponsiveProductTable
                 initialProducts={products.response.data}
                 categories={categories.response.data}

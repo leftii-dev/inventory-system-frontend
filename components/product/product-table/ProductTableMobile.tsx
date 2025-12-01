@@ -29,7 +29,7 @@ export default function ProductTableMobile(
                 const defaultImage = product.images.find(img => img.isDefault)
 
                 return (
-                    <div key={product.id} className={'p-3 border border-gray-300 shadow shadow-brand-primary rounded-lg '}>
+                    <div key={product.id} className={'p-3 border border-gray-300 shadow shadow-brand-primary rounded-lg'}>
                         <div className={'flex flex-row justify-between'}>
                             <div className={'relative w-32 h-32 rounded-lg bg-brand-primary'}>
                                 <Image

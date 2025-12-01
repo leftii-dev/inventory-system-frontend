@@ -57,7 +57,7 @@ export default function LoginForm({
                 };
 
                 return (
-                    <div>
+                    <div className={'flex flex-col gap-2'}>
                         <LoginEffects />
                         <FormInput
                             key={`email-${state.ok}`}

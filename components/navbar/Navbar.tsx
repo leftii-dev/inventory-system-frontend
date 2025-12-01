@@ -30,7 +30,7 @@ export default function Navbar() {
     }, [isOpen])
 
     return (
-        <nav className="flex flex-col justify-between md:px-16 md:flex-row md:justify-between md:items-center shadow p-4 md:mb-4">
+        <nav aria-label={'Site'} className="flex flex-col justify-between md:px-16 md:flex-row md:justify-between md:items-center shadow p-4 md:mb-4">
             <div className={`relative flex w-full justify-center items-center p-4 md:p-0 md:justify-start`}>
                 <div className={``}>
                     <Logo />

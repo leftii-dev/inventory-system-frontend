@@ -27,7 +27,7 @@ export default function ProfileForm({
             confirmMessage={'Are you sure you want to update your profile?'}
         >
             {(state) => (
-                <>
+                <div className={'flex flex-col gap-2'}>
                     {state.ok && (
                         <div className={`mx-auto relative w-24 h-24 rounded-full overflow-hidden`}>
                             <Image
@@ -77,7 +77,7 @@ export default function ProfileForm({
                     <SubmitButton>
                         Update
                     </SubmitButton>
-                </>
+                </div>
             )}
 
         </FormCard>

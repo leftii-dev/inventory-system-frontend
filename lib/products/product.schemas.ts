@@ -35,7 +35,14 @@ export const BrandRequestSchema = z.object({
 export const CategoryRequestSchema = z.object({
     name: z.string().min(2, {error: 'Name must be at least 2 characters long'}).max(50, {error: 'Name must be 50 characters or less'}),
     description: z.string().max(3000, {error: 'Description must be 3000 characters or less'}).optional(),
-    discountID: z.uuid({message: 'Invalid Discount ID'}).nullable().optional(),
+    discountID: z.preprocess(
+        (val) => (val === '' ? null : val),
+        z.uuid({error: 'Invalid Discount ID'}).nullable().optional()
+    ),
+    parentCategoryID: z.preprocess(
+        (val) => (val === '' ? null : val),
+        z.uuid({error: 'Invalid Parent Category ID'}).nullable().optional()
+    )
 })
 
 export const DiscountRequestSchema = z.object({
