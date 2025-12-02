@@ -21,7 +21,7 @@ export default function ProductLine({product}: {product: ProductResponse}) {
     return (
         <>
             <tr
-                className={`text-center whitespace-nowrap overflow-hidden max-h-5 hover:border hover:border-brand-primary odd:bg-gray-100 hover:cursor-pointer`}
+                className={`text-center divide-x divide-gray-300 whitespace-nowrap overflow-hidden max-h-5 hover:border hover:border-brand-primary odd:bg-gray-100 hover:cursor-pointer`}
                 onClick={triggerNavigation}
             >
                     <ProductCell>{product.sku}</ProductCell>
@@ -30,9 +30,9 @@ export default function ProductLine({product}: {product: ProductResponse}) {
                     <ProductCell>{product.productCode}</ProductCell>
                     <ProductCell>{product.categoryName}</ProductCell>
                     {'cost' in product && (
-                        <ProductCell>{formatPrice(product.cost)}</ProductCell>
+                        <ProductCell className={'text-end'}>{formatPrice(product.cost)}</ProductCell>
                     )}
-                    <ProductCell>{formatPrice(product.price)}</ProductCell>
+                    <ProductCell className={'text-end'}>{formatPrice(product.price)}</ProductCell>
                     <ProductCell>{product.discountName}</ProductCell>
 
                 <ProductCell>

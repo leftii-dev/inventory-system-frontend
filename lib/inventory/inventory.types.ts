@@ -20,7 +20,7 @@ interface PurchaseOrderResponseDetail extends PurchaseOrderResponseBasic {
     active: boolean
 }
 
-type VendorResponse = VendorResponseBasic | VendorResponseDetail;
+export type VendorResponse = VendorResponseBasic | VendorResponseDetail;
 
 interface VendorResponseBasic {
     id: string;
