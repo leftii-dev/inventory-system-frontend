@@ -2,6 +2,7 @@
 
 import {ActionResult, apiAction} from "@/lib/utils/api.actions";
 import {PurchaseOrderResponse, StatusResponse, VendorResponse} from "@/lib/inventory/inventory.types";
+import {PurchaseOrderRequestSchema} from "@/lib/inventory/inventory.schema";
 
 export async function getPurchaseOrders(): Promise<ActionResult<PurchaseOrderResponse[]>> {
     return await apiAction<PurchaseOrderResponse[]>({
@@ -40,6 +41,9 @@ export async function createPurchaseOrder(
     formData: FormData
 ): Promise<ActionResult<PurchaseOrderResponse>> {
     return await apiAction<PurchaseOrderResponse>({
-        schema:
+        schema: PurchaseOrderRequestSchema,
+        endpoint: "/purchase-orders",
+        method: 'POST',
+        requireAuth: true,
     })
 }
