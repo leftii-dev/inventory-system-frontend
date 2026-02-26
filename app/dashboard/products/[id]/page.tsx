@@ -5,7 +5,7 @@ import {emptyApiResponse} from "@/lib/types/validation.types";
 import {ProductResponse} from "@/lib/products/product.types";
 
 export default async function DashboardProductDetailPage({params}: {params: {id: string}}) {
-    const { id } = await params
+    const { id } = params
     const isNew = id === 'new';
 
     const [categories, brands, discounts, productResponse] = await Promise.all([
@@ -45,7 +45,7 @@ export default async function DashboardProductDetailPage({params}: {params: {id:
 
     const product = !isNew ? productResponse!.response.data : null;
     return (
-        <div className={`flex flex-row grow w-full border border-gray-300 rounded-lg shadow-lg`}>
+        <div className={`flex flex-row grow w-full border border-gray-300 shadow-lg`}>
             {!isNew && (
                 <div className={`flex flex-col w-1/4 p-4 border-r border-gray-300`}>
                     <ProductImageGrid images={product ? product.images : []} productId={product ? product.id : ''}/>

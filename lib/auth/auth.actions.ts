@@ -50,7 +50,7 @@ export async function loginAction(
                 httpOnly: true,
                 secure: false, // TODO: prod: true
                 sameSite: 'lax',
-                domain: 'localhost', // TODO: prod: .yourdomain.com
+                // No domain — defaults to the current host, which is required for localhost
             });
         }
     }

@@ -6,7 +6,7 @@ import { loginAction } from "@/lib/auth/auth.actions";
 import SubmitButton from "@/components/SubmitButton";
 import FormInput from "@/components/form/FormInput";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { UserResponse } from '@/lib/users/users.types';
 import { ApiResponseDto } from "@/lib/types/validation.types";
 import { useSession } from "@/lib/hooks/useSession";
@@ -22,63 +22,48 @@ export default function LoginForm({
     const router = useRouter();
     const { mutate } = useSession();
 
+    const handleSuccess = () => {
+        if (hasRedirected.current) return;
+        hasRedirected.current = true;
+
+        mutate().then(() => {
+            router.push(callbackUrl);
+        }).catch(() => {
+            router.push(callbackUrl);
+        });
+    };
+
     return (
         <FormCard<UserResponse>
             action={loginAction}
             initialState={{
-                ok: true,
+                ok: false,
                 response: initialData,
                 errors: {}
             }}
+            onSuccess={handleSuccess}
         >
-            {(state) => {
-                if (!state.ok) {
-                    state.errors = { ...state.errors, general: 'Invalid email or password' };
-                }
+            {(state) => (
+                <div className={'flex flex-col gap-2'}>
+                    <FormInput
+                        key={`email-${state.ok}`}
+                        label={'Email:'}
+                        name={'email'}
+                        type={'text'}
+                        required={true}
+                    />
+                    <FormInput
+                        label={'Password:'}
+                        name={'password'}
+                        type={'password'}
+                        required={true}
+                    />
 
-
-                const LoginEffects = () => {
-                    useEffect(() => {
-                        if (state.ok && state.response?.data?.email && !hasRedirected.current) {
-                            hasRedirected.current = true;
-
-                            // Refresh the session cache, then redirect
-                            mutate().then(() => {
-                                router.push(callbackUrl);
-                            }).catch((err) => {
-                                console.error("Failed to refresh session:", err);
-                                // Still redirect even if refresh fails
-                                router.push(callbackUrl);
-                            });
-                        }
-                    }, [state.ok, state.response?.data?.email]);
-
-                    return null; // This component only handles effects
-                };
-
-                return (
-                    <div>
-                        <LoginEffects />
-                        <FormInput
-                            key={`email-${state.ok}`}
-                            label={'Email:'}
-                            name={'email'}
-                            type={'text'}
-                            required={true}
-                        />
-                        <FormInput
-                            label={'Password:'}
-                            name={'password'}
-                            type={'password'}
-                            required={true}
-                        />
-
-                        <SubmitButton>
-                            Login
-                        </SubmitButton>
-                    </div>
-                );
-            }}
+                    <SubmitButton>
+                        Login
+                    </SubmitButton>
+                </div>
+            )}
         </FormCard>
     );
 }

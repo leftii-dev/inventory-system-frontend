@@ -14,6 +14,7 @@ type FormCardProps<T> = {
     onSuccess?: (payload: T) => void;
     onChange?: (e: React.FormEvent<HTMLFormElement>) => void;
     onInput?: (e: React.FormEvent<HTMLFormElement>) => void;
+    showStatus?: boolean;
 };
 
 export default function FormCard<T>({
@@ -23,11 +24,14 @@ export default function FormCard<T>({
                                         confirmMessage,
                                         onSuccess,
                                         onChange,
-                                        onInput
+                                        onInput,
+                                        showStatus = true,
                                     }: FormCardProps<T>) {
     const [hasSubmitted, setHasSubmitted] = useState(false);
+    const [showBanner, setShowBanner] = useState(false);
     const router = useRouter();
     const onSuccessRef = useRef(onSuccess);
+    const bannerTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     useEffect(() => {
         onSuccessRef.current = onSuccess;
@@ -38,7 +42,10 @@ export default function FormCard<T>({
         formData: FormData
     ): Promise<ActionResult<T>> => {
         setHasSubmitted(true);
+        setShowBanner(true);
+        if (bannerTimerRef.current) clearTimeout(bannerTimerRef.current);
         const result = await action(prevState, formData);
+        bannerTimerRef.current = setTimeout(() => setShowBanner(false), 5000);
 
         if (result.unauthorized) {
             router.push('/auth/login?reason=session-expired');
@@ -72,7 +79,7 @@ export default function FormCard<T>({
             onInput={onInput}
             className="w-full max-w-full bg-white p-8 rounded-lg shadow-md border border-gray-300"
         >
-            {hasSubmitted && 'ok' in state && (
+            {showStatus && hasSubmitted && showBanner && 'ok' in state && (
                 <div
                     className={`p-3 my-3 rounded text-center ${
                         state.ok

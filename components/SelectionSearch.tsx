@@ -1,16 +1,16 @@
-import {ProductFilters} from "@/lib/products/product.types";
 import {JSX, useEffect, useState} from "react";
+import {ChevronDown} from "lucide-react";
 
-type SelectionSearchProps = {
+type SelectionSearchProps<T> = {
     param: string;
     selections: {id: string, name: string}[],
-    setFilters: React.Dispatch<React.SetStateAction<ProductFilters>>
+    setFilters: React.Dispatch<React.SetStateAction<T>>
 }
 
-export default function SelectionSearch(
+export default function SelectionSearch<T>(
     {param, selections, setFilters}
     :
-    SelectionSearchProps
+    SelectionSearchProps<T>
 ): JSX.Element {
     const [value, setValue] = useState<string>('');
 
@@ -22,16 +22,21 @@ export default function SelectionSearch(
         return () => clearTimeout(handleChange)
     }, [param, setFilters, value]);
     return (
-        <select
-            name={param}
-            id={param}
-            onChange={(e) => setValue(e.target.value)}
-        >
-            <option value={''}></option>
-            {selections.map(selection => (
-                <option key={selection.id} value={selection.id}>{selection.name}</option>
-            ))}
-        </select>
+        <div className="relative w-full">
+            <select
+                name={param}
+                id={param}
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
+                className="w-full appearance-none p-1 text-xs text-center pr-5 cursor-pointer"
+            >
+                <option value={''}></option>
+                {selections.toSorted((a, b) => a.name.localeCompare(b.name)).map(selection => (
+                    <option key={selection.id} value={selection.id}>{selection.name}</option>
+                ))}
+            </select>
+            <ChevronDown className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-gray-400" size={12} />
+        </div>
     )
 
 }
