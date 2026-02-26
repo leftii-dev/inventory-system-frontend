@@ -1,8 +1,8 @@
 'use client';
 
-import React, { InputHTMLAttributes } from "react";
+import React, { TextareaHTMLAttributes } from "react";
 
-type FormTextAreaProps = InputHTMLAttributes<HTMLTextAreaElement> & {
+type FormTextAreaProps = TextareaHTMLAttributes<HTMLTextAreaElement> & {
     name: string,
     label: string,
     error?: string
@@ -25,7 +25,7 @@ export default function FormTextArea(
                 id={name}
                 name={name}
                 {...rest}
-                className={`w-full border rounded px-3 py-2 h-48 focus:outline-none focus:ring ${
+                className={`w-full border rounded px-3 py-2 focus:outline-none focus:ring ${
                     error ? 'border-red-500' : 'border-gray-300'}
                 `}
             />

@@ -1,59 +1,43 @@
-import {getProducts} from "@/lib/products/product.actions";
-import {getPurchaseOrder, getStatuses, getVendors} from "@/lib/inventory/inventory.actions";
-import {PurchaseOrderResponse} from "@/lib/inventory/inventory.types";
-import {emptyApiResponse} from "@/lib/types/validation.types";
+import {
+    createBlankPurchaseOrder,
+    getPurchaseOrder, getPurchaseOrderItems,
+    getStatuses,
+    getVendors
+} from "@/lib/inventory/inventory.actions";
 
-export default async function DashboardPurchaseOrderDetailPage({params}: {params: {id: string}}) {
-    const { id } = params
+import PurchaseOrderEditForm from "@/app/dashboard/purchasing/[id]/PurchaseOrderEditForm";
+import {redirect} from "next/navigation";
+import PurchaseOrderItemsSection from "@/app/dashboard/purchasing/[id]/PurchaseOrderItemsSection";
+import SimpleButton from "@/components/SimpleButton";
+
+export default async function DashboardPurchaseOrderDetailPage({params}: {params: Promise<{id: string}>}) {
+    const { id } = await params
     const isNew = id === 'new'
 
-    const [products, vendors, status, purchaseOrderResponse] = await Promise.all([
-        getProducts(),
+    const [purchaseOrderItems, vendors, statuses, purchaseOrderResponse] = await Promise.all([
+        getPurchaseOrderItems(id),
         getVendors(),
         getStatuses(),
         isNew ? Promise.resolve(null) : getPurchaseOrder(id)
     ])
 
-    const newPO: PurchaseOrderResponse = {
-        id: '',
-        dateExpected: '',
-        purchaseOrderCode: '',
-        totalCost: 0,
-        notes: '',
-        vendor: {
-            id: '',
-            vendorCode: '',
-            name: '',
-            addressLine1: '',
-            addressLine2: '',
-            city: '',
-            state: '',
-            zipCode: '',
-            contactName: '',
-            phone: '',
-            email: ''
-        },
-        status: {
-            id: '',
-            name: '',
-            description: ''
-        }
-
-
+    if(isNew) {
+        const result = await createBlankPurchaseOrder();
+        redirect(`/dashboard/purchasing/${result.response?.data?.id}`);
     }
 
-    const formInitialData = isNew
-        ? emptyApiResponse<PurchaseOrderResponse>(newPO)
-        : purchaseOrderResponse!.response;
+    const formInitialData = purchaseOrderResponse!.response;
+    const initialItems = purchaseOrderItems!.response ?? [];
 
-    const purchaseOrder = !isNew ? purchaseOrderResponse!.response.data : null;
     return (
-        <div className={`flex flex-row grow w-full border border-gray-300 shadow-lg`}>
+        <div className={`flex flex-row grow w-full border border-gray-300 shadow-lg`} >
             <div className={`flex flex-col flex-1 p-4`}>
                 <PurchaseOrderEditForm
-                    isNew={isNew}
-                    initialData={newPO}
+                    initialData={formInitialData}
+                    initialVendors={vendors.response?.data}
+                    initialStatuses={statuses.response?.data}
                 />
+                <PurchaseOrderItemsSection initialItems={initialItems.data} purchaseOrderId={id}/>
             </div>
         </div>
     )

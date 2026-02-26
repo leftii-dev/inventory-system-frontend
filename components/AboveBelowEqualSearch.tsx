@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from "react";
-import type { ProductFilters } from "@/lib/products/product.types";
+import { ChevronDown } from "lucide-react";
 
-type NumberSearchProps = {
-    param: "cost" | "price";
-    setFilters: React.Dispatch<React.SetStateAction<ProductFilters>>;
+type NumberSearchProps<T> = {
+    param: "cost" | "price" | "totalCost" | "totalPrice";
+    setFilters: React.Dispatch<React.SetStateAction<T>>;
     min?: number;
     max?: number;
     maxIntegerDigits?: number;
@@ -13,7 +13,7 @@ type NumberSearchProps = {
     debounceMs?: number;
 };
 
-export default function AboveBelowEqualsSearch({
+export default function AboveBelowEqualsSearch<T extends Record<string, string | undefined>>({
                                                    param,
                                                    setFilters,
                                                    min = 0.01,
@@ -21,7 +21,7 @@ export default function AboveBelowEqualsSearch({
                                                    maxIntegerDigits = 10,
                                                    maxFractionDigits = 2,
                                                    debounceMs = 300,
-                                               }: NumberSearchProps) {
+                                               }: NumberSearchProps<T>) {
     const [operator, setOperator] = useState<"Above" | "Below" | "Equal">("Equal");
     const [value, setValue] = useState("");
     const [error, setError] = useState<string | null>(null);
@@ -70,7 +70,7 @@ export default function AboveBelowEqualsSearch({
                 delete next[`${param}Below`];
                 delete next[`${param}Equal`];
 
-                next[`${param}${operator}` as keyof ProductFilters] = value;
+                next[`${param}${operator}` as keyof T] = value as T[keyof T];
                 return next;
             });
         }, debounceMs);
@@ -79,17 +79,20 @@ export default function AboveBelowEqualsSearch({
     }, [value, operator, param, setFilters, min, max, maxIntegerDigits, maxFractionDigits, debounceMs]);
 
     return (
-        <div className="flex flex-col gap-1 items-center">
-            <div className="flex items-stretch">
-                <select
-                    value={operator}
-                    onChange={(e) => setOperator(e.target.value as "Above" | "Below" | "Equal")}
-                    className=" px-2 py-1 text-xs"
-                >
-                    <option value="Above">Above</option>
-                    <option value="Below">Below</option>
-                    <option value="Equal">Equal</option>
-                </select>
+        <div className="flex flex-col gap-1 items-center w-full">
+            <div className="flex items-stretch w-full">
+                <div className="relative flex-1">
+                    <select
+                        value={operator}
+                        onChange={(e) => setOperator(e.target.value as "Above" | "Below" | "Equal")}
+                        className="appearance-none w-full px-2 py-1 pr-5 text-xs cursor-pointer text-right"
+                    >
+                        <option value="Above">Above</option>
+                        <option value="Below">Below</option>
+                        <option value="Equal">Equal</option>
+                    </select>
+                    <ChevronDown className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 text-gray-400" size={12} />
+                </div>
 
                 <input
                     type="number"
@@ -99,7 +102,7 @@ export default function AboveBelowEqualsSearch({
                     value={value}
                     onChange={(e) => setValue(e.target.value)}
                     placeholder="$"
-                    className={` px-2 py-1 text-sm w-32 ${error ? "border-red-500" : ""}`}
+                    className={`px-2 py-1 text-sm w-32 ${error ? "border-red-500" : ""}`}
                 />
             </div>
             {error && <p className="text-red-500 text-xs">{error}</p>}

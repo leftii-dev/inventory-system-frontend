@@ -1,9 +1,8 @@
 'use client';
 
-import { ProductFilters } from "@/lib/products/product.types";
 import React, { JSX, useEffect, useState, useRef } from "react";
 
-export default function StringSearch<K extends keyof ProductFilters>({
+export default function StringSearch<T extends Record<string, string | undefined>, K extends keyof T>({
                                                                          param,
                                                                          filters,
                                                                          setFilters,
@@ -11,13 +10,13 @@ export default function StringSearch<K extends keyof ProductFilters>({
                                                                          maxLength
                                                                      }: {
     param: K,
-    filters: ProductFilters,
-    setFilters: React.Dispatch<React.SetStateAction<ProductFilters>>,
+    filters: T,
+    setFilters: React.Dispatch<React.SetStateAction<T>>,
     minLength: number,
     maxLength: number
 }): JSX.Element {
     const [text, setText] = useState<string>(filters[param] ?? '');
-    const lastFiltersValue = useRef(filters[param]);
+    const lastFiltersValue = useRef<string | undefined>(filters[param]);
 
     // Sync with filters only if externally changed
     useEffect(() => {

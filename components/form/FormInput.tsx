@@ -12,6 +12,7 @@ export default function FormInput({
     name,
     label,
     error,
+    className,
     ...rest
 }: FormInputProps) {
     return(
@@ -23,7 +24,7 @@ export default function FormInput({
                 id={name}
                 name={name}
                 {...rest}
-                className={`w-full border rounded px-3 py-2 focus:outline-none focus:ring ${
+                className={className ?? `w-full border rounded px-3 py-2 focus:outline-none focus:ring ${
                         error ? 'border-red-500' : 'border-gray-300'}
                     `}
             />

@@ -93,7 +93,7 @@ export default function ProductTable(
             <div className={'h-full w-full overflow-auto'}>
                 <table className={`min-w-full max-w-full table-fixed text-sm`}>
                     <thead className={'sticky top-0 bg-white z-10'}>
-                    <tr className={`divide-x divide-gray-300 border-t border-gray-300`}>
+                    <tr className={`divide-x divide-gray-300 border-t border-gray-300 bg-brand-primary`}>
                         <th className={'p-2'}>SKU</th>
                         <th className={'p-2'}>Brand</th>
                         <th className={'p-2'}>Product Name</th>
@@ -131,7 +131,7 @@ export default function ProductTable(
                     ) : (
                         <tr>
                             <td colSpan={10} className="p-10 text-center text-gray-500">
-                                No products found. Use the + button to add one.
+                                No products found. Clear filters or use the + button to add one.
                             </td>
                         </tr>
                     )}

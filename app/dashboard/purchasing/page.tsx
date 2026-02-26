@@ -1,27 +1,41 @@
-import {getPurchaseOrders} from "@/lib/inventory/inventory.actions";
+import {getPurchaseOrders, getStatuses, getVendors} from "@/lib/inventory/inventory.actions";
 import AddButton from "@/components/ui/AddButton";
+import PurchasingTable from "@/components/purchasing/purchasing-table/PurchasingTable";
+import {getParam} from "@/lib/utils/util.params";
 
-export default async function PurchasingPage(){
-    const poListRes = await getPurchaseOrders();
-    console.log(poListRes);
-    const poList = poListRes.response.data
+export default async function PurchasingPage({
+    searchParams
+                                             }:{
+    searchParams: Promise<Record<string, string | string[] | undefined>>
+}){
+    const resolvedParams = await searchParams;
+    const params = resolvedParams ?? {};
 
-    console.log(poList);
+    const filters = {
+        codeContains: getParam(params, "codeContains"),
+        dateExpected: getParam(params, "dateExpected"),
+        totalLessThan: getParam(params, "totalLessThan"),
+        totalGreaterThan: getParam(params, "totalGreaterThan"),
+        vendor: getParam(params, "vendor"),
+        status: getParam(params, "status")
+    };
+
+    const cleanedFilters = Object.fromEntries(
+        Object.entries(filters).filter(([_, v]) => v !== undefined && v !== '')
+    );
+
+    const [purchaseOrders, vendors, statuses] = await Promise.all([
+        getPurchaseOrders(cleanedFilters),
+        getVendors(),
+        getStatuses()
+    ]);
+
 
     return (
-        <div className={'flex flex-row gap-4'}>
+        <div className={'relative h-[75vh] w-full border border-gray-300 rounded-r-lg bg-white shadow-sm'}>
             <div id={'sidebar-search-list'} className={'flex flex-col gap-4'}>
-                <h2 className={'font-inter text-lg font-medium'}>
-                    Purchase Order List
-                </h2>
                 <div className={'flex flex-col gap-4 bg-brand-primary'}>
-                    {poList && (
-                        poList.map((po) => (
-                            <div className={'flex flex-row outline gap-4'} key={po.id}>
-                                {po.purchaseOrderCode} - {po.dateExpected} - {po.status.name} - {po.totalCost} - {po.vendor.name}
-                            </div>
-                        ))
-                    )}
+                    <PurchasingTable initialPurchaseOrders={purchaseOrders.response.data} vendors={vendors.response.data} statuses={statuses.response.data} />
                     <AddButton href={'/dashboard/purchasing/new'} />
                 </div>
             </div>

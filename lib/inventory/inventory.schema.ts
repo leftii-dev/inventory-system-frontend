@@ -3,7 +3,6 @@ import {percentageSchema, costSchema, presentOrFutureDateSchema, localDateSchema
 
 export const PurchaseOrderRequestSchema = z.object({
     dateExpected: presentOrFutureDateSchema,
-    totalCost: costSchema,
     notes: z.string().max(3000, { error: "Notes cannot exceed 3000 characters" }).optional(),
     vendorID: z.uuid({ error: "Vendor ID must be a valid UUID" }),
     statusID: z.uuid({ error: "Status must be a valid UUID" })
@@ -11,7 +10,6 @@ export const PurchaseOrderRequestSchema = z.object({
 
 export const PurchaseOrderItemRequestSchema = z.object({
     costUnit: costSchema,
-    costLineTotal: costSchema,
     quantity: z.coerce.number()
         .min(1, {error: "Quantity must be positive"})
         .max(10000, {error: "Quantity cannot exceed 10,000"}),
@@ -39,7 +37,6 @@ export const ReceivingVoucherItemRequestSchema = z.object({
     discountPercentage: percentageSchema,
     discountReason: z.string().max(50, {error: "Discount reason must not exceed 50 characters"}).optional(),
     costUnit: costSchema,
-    costLineTotal: costSchema,
     productID: z.uuid({ error: "Product ID must be a valid UUID" }),
     receivingVoucherID: z.uuid({ error: "Receiving Voucher ID must be a valid UUID" }),
 })
